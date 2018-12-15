@@ -11,7 +11,7 @@
 	<a href='' onclick='location.href = `dataset-build.html${location.hash}`; event.preventDefault();'>build</a> -
 	<a href='' onclick='location.href = `dataset-view.html${location.hash}`; event.preventDefault();'>view</a> -
 	<a href='' onclick='location.href = `model-learn.html${location.hash}`; event.preventDefault();'>learn</a> -
-	<a href='' onclick='location.href = `model-predict.html${location.hash}`; event.preventDefault();'>predict</a>
+	<a href='model-predict.html'>predict</a>
 	<br /><br /><br />
 
 
@@ -57,6 +57,7 @@
 		</label>
 	</div>	
 	<div id='optionsID' style='display:none'>
+		<hr/>
 		<div>
 			<label>Display posenet result
 				<input type="checkbox" id="posenetResultEnableID" checked></input>
@@ -69,24 +70,19 @@
 		<h3>Camera Calibration</h3>
 		<div>
 			<label>PosenetResult offset Y :</label>
-			<input type="range" id="posenetOffsetYRangeID" min="-112" max="+112" value='-15' title='PosenetResult offset Y' />
+			<input type="range" id="posenetOffsetYRangeID" min="-56" max="+56" value='-15' title='PosenetResult offset Y' />
 			<label id='posenetOffsetYLabelID'>-15</label>
 		</div>
 		<br />
 		<h3>Dataset Heatmap</h3>
 		<!-- UI to select the dataset-info url -->
 		<label>Dataset:
-			<select id='datasetNameID'>
-				<option value='low-isSlouching__high-notSlouching'>low-isSlouching__high-notSlouching</option>
-				<option value='low-isSlouching__middle-notSlouching'>low-isSlouching__middle-notSlouching</option>
-			</select>
+			<span id='datasetNameID'></label>
 		</label>
-
+		<br/>
 		<!-- UI to select the augmentation policy -->
 		<label>Augmentation Policy:
-			<select id='augmentationPolicyID'>
-				<!-- options for augmentationPolicy -->
-			</select>
+			<span id='augmentationPolicyID'></label>
 		</label>
 		<br />
 		<br />
@@ -162,19 +158,24 @@
 		//////////////////////////////////////////////////////////////////////////////
 		//		load dataset-info
 		//////////////////////////////////////////////////////////////////////////////
-		var datasetName = urlParams.get('datasetName') || 'low-isSlouching__middle-notSlouching'
+		var datasetName = 'low-isSlouching__middle-notSlouching'
+		if( localStorage.getItem('slouchingOrNot-predict-datasetName') !== null ){
+			datasetName = localStorage.getItem('slouchingOrNot-predict-datasetName')
+		}		
+		// set #datasetNameID value
+		document.querySelector('#datasetNameID').innerHTML = datasetName
+
+
 		var datasetInfoURL = `../datasets/${datasetName}/dataset-info.json`
 		var datasetInfo = await DatasetInfo.load(datasetInfoURL)
 
-		// set #datasetNameID value
-		document.querySelector('#datasetNameID').value = datasetName
 
-		// handle #datasetNameID change
-		document.querySelector('#datasetNameID').addEventListener('change', function () {
-			urlParams.set('datasetName', this.value);
-			location.hash = `#${urlParams.toString()}`
-			location.reload()
-		})
+		// // handle #datasetNameID change
+		// document.querySelector('#datasetNameID').addEventListener('change', function () {
+		// 	urlParams.set('datasetName', this.value);
+		// 	location.hash = `#${urlParams.toString()}`
+		// 	location.reload()
+		// })
 
 		//////////////////////////////////////////////////////////////////////////////
 		//		load DatasetRaw
@@ -204,30 +205,35 @@
 		//////////////////////////////////////////////////////////////////////////////
 
 		// get current augmentationPolicy
-		let augmentationPolicy = urlParams.get('augmentationPolicy') || 'massiveAugmentation2'
+		// let augmentationPolicy = urlParams.get('augmentationPolicy') || 'massiveAugmentation2'
+		var augmentationPolicy = 'massiveAugmentation2'
+		if( localStorage.getItem('slouchingOrNot-predict-augmentationPolicy') !== null ){
+			augmentationPolicy = localStorage.getItem('slouchingOrNot-predict-augmentationPolicy')
+		}		
+
+		// set #augmentationPolicyID value
+		document.querySelector('#augmentationPolicyID').innerHTML = augmentationPolicy
+
 
 		// augment datasetRaw
 		datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
 		datasetRaw.print('after augmentation data')
 
-		// build option for augmentationPolicyID
-		var augmentationPolicies = Object.keys(DatasetAugmentation.registeredAugmentations)
-		augmentationPolicies.forEach((augmentationPolicy) => {
-			var domElement = document.createElement('option')
-			domElement.value = augmentationPolicy
-			domElement.innerHTML = augmentationPolicy
-			document.querySelector('#augmentationPolicyID').appendChild(domElement)
-		})
+		// // build option for augmentationPolicyID
+		// var augmentationPolicies = Object.keys(DatasetAugmentation.registeredAugmentations)
+		// augmentationPolicies.forEach((augmentationPolicy) => {
+		// 	var domElement = document.createElement('option')
+		// 	domElement.value = augmentationPolicy
+		// 	domElement.innerHTML = augmentationPolicy
+		// 	document.querySelector('#augmentationPolicyID').appendChild(domElement)
+		// })
 
-		// set #augmentationPolicyID value
-		document.querySelector('#augmentationPolicyID').value = augmentationPolicy
-
-		// handle #augmentationPolicyID change
-		document.querySelector('#augmentationPolicyID').addEventListener('change', function () {
-			urlParams.set('augmentationPolicy', this.value);
-			location.hash = `#${urlParams.toString()}`
-			location.reload()
-		})
+		// // handle #augmentationPolicyID change
+		// document.querySelector('#augmentationPolicyID').addEventListener('change', function () {
+		// 	urlParams.set('augmentationPolicy', this.value);
+		// 	location.hash = `#${urlParams.toString()}`
+		// 	location.reload()
+		// })
 
 		//////////////////////////////////////////////////////////////////////////////
 		//		remove any tilt in datasetRaw posenetResult keypoints
