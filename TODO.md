@@ -1,10 +1,11 @@
-- create a github orga slouching-or-not
+- rename predict-skins into predict-ui-plugins
+- DONE create a github orga slouching-or-not
   - be sure to recreate the history
   - https://github.com/SlouchingOrNot/ml-posenet
   - https://github.com/SlouchingOrNot/via-posenet
   - https://github.com/SlouchingOrNot/via-mobilenet
   - find better name for the repositories
-- give up this idea of predict-skins ???
+- DONE give up this idea of predict-skins ???
   - it induce a lot of complexity
   - how to handle that ? i need an actual application i will use everyday. it needs to be that useful
   - first define what this application needs
