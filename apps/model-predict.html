@@ -165,17 +165,9 @@
 		// set #datasetNameID value
 		document.querySelector('#datasetNameID').innerHTML = datasetName
 
-
+		// load datasetInfo
 		var datasetInfoURL = `../datasets/${datasetName}/dataset-info.json`
 		var datasetInfo = await DatasetInfo.load(datasetInfoURL)
-
-
-		// // handle #datasetNameID change
-		// document.querySelector('#datasetNameID').addEventListener('change', function () {
-		// 	urlParams.set('datasetName', this.value);
-		// 	location.hash = `#${urlParams.toString()}`
-		// 	location.reload()
-		// })
 
 		//////////////////////////////////////////////////////////////////////////////
 		//		load DatasetRaw
@@ -218,22 +210,6 @@
 		// augment datasetRaw
 		datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
 		datasetRaw.print('after augmentation data')
-
-		// // build option for augmentationPolicyID
-		// var augmentationPolicies = Object.keys(DatasetAugmentation.registeredAugmentations)
-		// augmentationPolicies.forEach((augmentationPolicy) => {
-		// 	var domElement = document.createElement('option')
-		// 	domElement.value = augmentationPolicy
-		// 	domElement.innerHTML = augmentationPolicy
-		// 	document.querySelector('#augmentationPolicyID').appendChild(domElement)
-		// })
-
-		// // handle #augmentationPolicyID change
-		// document.querySelector('#augmentationPolicyID').addEventListener('change', function () {
-		// 	urlParams.set('augmentationPolicy', this.value);
-		// 	location.hash = `#${urlParams.toString()}`
-		// 	location.reload()
-		// })
 
 		//////////////////////////////////////////////////////////////////////////////
 		//		remove any tilt in datasetRaw posenetResult keypoints
@@ -427,6 +403,7 @@
 				document.querySelector('#bestClassNameID').style.color = ''
 			}
 
+			// display predictionConfidenceID
 			document.querySelector('#predictionConfidenceID').innerHTML = `${Math.round(predictionsData[rawBestClass] * 100)}%`
 
 			//////////////////////////////////////////////////////////////////////////////

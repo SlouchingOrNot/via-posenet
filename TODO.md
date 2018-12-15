@@ -1,10 +1,10 @@
 - in model-predict.html - do a high-water low-water mechanism for offset-y
   - else it is super possible that the class will be shaky in skin-predict
-- in module-predict.html - load the dataset+augmentationPolicy from the localStorage
+- DONE in module-predict.html - load the dataset+augmentationPolicy from the localStorage
   - they should be written when the learning is completed, thus dataset+augmentation in model-predict always reflect the stored model
   - It is confusing buggy to store them inthe URL, but the model in the indexdb
-- DONE in module-predict.html - store the posenetOffset in local storage
 - remove any UI from model-predict.html, move it in plugins-ui-plugins/
+- DONE in module-predict.html - store the posenetOffset in local storage
 - add link to github repo
 - DONE rename predict-skins into predict-ui-plugins
 - DONE create a github orga slouching-or-not
