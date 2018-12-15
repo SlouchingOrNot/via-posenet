@@ -1,0 +1,277 @@
+<body>
+	<!-- links in page header -->
+	<a href='' onclick='location.href = `dataset-build.html${location.hash}`; event.preventDefault();'>build</a> -
+	<a href='' onclick='location.href = `dataset-view.html${location.hash}`; event.preventDefault();'>view</a> -
+	<a href='' onclick='location.href = `model-learn.html${location.hash}`; event.preventDefault();'>learn</a> -
+	<a href='' onclick='location.href = `model-predict.html${location.hash}`; event.preventDefault();'>predict</a>
+	<br/><br/><br/>
+
+	<!-- UI to tune the augmentation policy -->
+	<label>Augmentation Policy:
+		<select id='augmentationPolicyID'>
+			<!-- options for augmentationPolicy -->
+		</select>
+	</label>
+	<br/><br/>
+
+	<!-- UI to select the dataset-info url -->
+	<label>Dataset:
+		<select id='datasetNameID'>
+			<option value='low-isSlouching__high-notSlouching'>low-isSlouching__high-notSlouching</option>
+			<option value='low-isSlouching__middle-notSlouching'>low-isSlouching__middle-notSlouching</option>
+		</select>
+	</label>
+
+
+
+	<!-- element to contained the featureVectorHeatmapsID -->
+	<h1>FeatureVectors Heatmaps</h1>
+	<div id='featureVectorHeatmapsID'></div>
+
+	<!-- display datasetRaw summaries -->
+	<h1>DatasetRaw Sumaries</h1>
+	<div id='datasetRawSumaries'></div>
+
+	<!-- element to contained the viewed images -->
+	<h1>DatasetRaw Views</h1>
+
+	<!-- View Dataset button -->
+	<button id='drawDatasetRawID'>Display Images</button>	<div id='imagesID'></div>
+</body>
+
+<!-- Load TensorFlow.js -->
+<!-- <script src='https://unpkg.com/@tensorflow/tfjs'></script> -->
+<script src='vendor/tensorflow.min.js'></script>
+<!-- Load Posenet -->
+<!-- <script src='https://unpkg.com/@tensorflow-models/posenet'></script> -->
+<script src='vendor/tfjs-model-posenet.min.js'></script>
+
+
+<script type='module'>
+import mlPosenet from '../../contribs/ml-posenet/src/index.js'
+import DatasetRaw from '../src/dataset-raw.js';
+import DatasetProcessing from '../src/dataset-processing.js';
+import DatasetAugmentation from '../src/dataset-augmentation.js';
+import ModelConstants from '../src/model-constants.js'
+import DatasetFeature from '../src/dataset-feature.js';
+import DatasetInfo from '../src/dataset-info.js'
+
+(async function(){
+	let cst = ModelConstants
+	var urlParams = new URLSearchParams(window.location.hash.substr(1))
+
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		load dataset-info
+	//////////////////////////////////////////////////////////////////////////////
+	var datasetName = urlParams.get('datasetName') || 'low-isSlouching__middle-notSlouching'
+	var datasetInfoURL = `../datasets/${datasetName}/dataset-info.json`
+	var datasetInfo = await DatasetInfo.load(datasetInfoURL)
+
+	// set #datasetNameID value
+	document.querySelector('#datasetNameID').value = datasetName
+
+	// handle #datasetNameID change
+	document.querySelector('#datasetNameID').addEventListener('change', function(){
+		urlParams.set('datasetName', this.value);
+		location.hash = `#${urlParams.toString()}`
+		location.reload()
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		load data
+	//////////////////////////////////////////////////////////////////////////////
+	console.time('loadingData')
+	let datasetRaw = new DatasetRaw(cst.NUM_CLASSES)
+	for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
+		await datasetRaw.loadClass(classIndex, datasetInfo.posenetResultURLs[classIndex], datasetInfo.imageURLs[classIndex])
+	}
+	console.timeEnd('loadingData')
+
+	// keep only the first result - just to debug augmentation
+	if( false ){
+		datasetRaw.posenetResults = [ [datasetRaw.posenetResults[0][0]], [datasetRaw.posenetResults[1][0]] ]
+		datasetRaw.imageURLs = [ [datasetRaw.imageURLs[0][0]], [datasetRaw.imageURLs[1][0]] ]
+	}
+
+	// display datasetRaw before augmentation
+	let domElement = datasetRaw.createHTMLSummary('Before Augmentation')
+	document.querySelector('#datasetRawSumaries').appendChild( domElement )
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		remove not isGoodEnough samples from datasetRaw
+	//////////////////////////////////////////////////////////////////////////////
+
+	datasetRaw = DatasetProcessing.removeNotGoodEnoughSamples(datasetRaw)
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		balance datasetRaw
+	//////////////////////////////////////////////////////////////////////////////
+
+	DatasetProcessing.balanceDatasetRaw(datasetRaw)
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		Augment datasetRaw
+	//////////////////////////////////////////////////////////////////////////////
+
+	// get current augmentationPolicy
+	let augmentationPolicy = urlParams.get('augmentationPolicy') || 'massiveAugmentation2'
+
+	// augment datasetRaw
+	datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
+	datasetRaw.print('after augmentation data')
+
+	// build option for augmentationPolicyID
+	var augmentationPolicies = Object.keys(DatasetAugmentation.registeredAugmentations)
+	augmentationPolicies.forEach((augmentationPolicy) => {
+		var domElement = document.createElement('option')
+		domElement.value = augmentationPolicy
+		domElement.innerHTML = augmentationPolicy
+		document.querySelector('#augmentationPolicyID').appendChild(domElement)
+	})
+
+	// set #augmentationPolicyID value
+	document.querySelector('#augmentationPolicyID').value = augmentationPolicy
+
+	// handle #augmentationPolicyID change
+	document.querySelector('#augmentationPolicyID').addEventListener('change', function(){
+		urlParams.set('augmentationPolicy', this.value);
+		location.hash = `#${urlParams.toString()}`
+		location.reload()
+	})
+
+	// display datasetRaw before augmentation
+	document.querySelector('#datasetRawSumaries').appendChild( datasetRaw.createHTMLSummary(`After Augmentation ${augmentationPolicy}`))
+
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		remove any tilt in datasetRaw posenetResult keypoints
+	//////////////////////////////////////////////////////////////////////////////
+
+	datasetRaw = DatasetProcessing.removeTiltDatasetRaw(datasetRaw)
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		display featureVector heatmap
+	//////////////////////////////////////////////////////////////////////////////
+
+	for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
+		// build canvasEl
+		let canvasEl = document.createElement('canvas')
+		canvasEl.width = canvasEl.height = 256
+		canvasEl.style.border = 'gray solid 1px'
+		document.querySelector('#featureVectorHeatmapsID').appendChild(canvasEl)
+		// build featureVectors
+		let featureVectors = []
+		for(let sampleIndex = 0; sampleIndex < datasetRaw.posenetResults[classIndex].length; sampleIndex++){
+			let posenetResult = datasetRaw.posenetResults[classIndex][sampleIndex]
+			if( DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult) === false ) continue
+
+			var featureVector = DatasetFeature.createFeatureVector(posenetResult)
+			featureVectors.push(featureVector)
+		}
+		// draw heat map
+		DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
+	}
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		load images
+	//////////////////////////////////////////////////////////////////////////////
+
+	console.time('loadingImages')
+	let imagesEl = Array.from(new Array(cst.NUM_CLASSES), () => [])
+	for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
+		for(let sampleIndex = 0; sampleIndex < datasetRaw.imageURLs[classIndex].length; sampleIndex++){
+			var imageURL = datasetRaw.imageURLs[classIndex][sampleIndex]
+			var imageEl = await loadImageAsync(imageURL)
+			imagesEl[classIndex].push(imageEl)
+		}
+	}
+	console.timeEnd('loadingImages')
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		display datasetRaw
+	//////////////////////////////////////////////////////////////////////////////
+
+	document.querySelector('#drawDatasetRawID').addEventListener('click', function(){
+		for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
+			for(let sampleIndex = 0; sampleIndex < imagesEl[classIndex].length; sampleIndex++){
+				let canvasEl = document.createElement('canvas')
+				canvasEl.width = canvasEl.height = 256
+				document.querySelector('#imagesID').appendChild(canvasEl)
+
+				drawDatasetRaw(canvasEl, classIndex, sampleIndex)
+			}
+		}
+	})
+
+	return
+
+	function drawImageEl(canvasEl, imageEl){
+		const context = canvasEl.getContext('2d');
+		context.drawImage(imageEl, 0, 0, canvasEl.width, canvasEl.height);
+	}
+
+	function drawClassName(canvasEl, classIndex, sampleIndex, sampleCount){
+		const context = canvasEl.getContext('2d')
+		context.fillStyle = 'black'
+		context.font = "15px Arial bolder"
+		context.fillText(`${cst.CLASS_NAMES[classIndex]} - ${sampleIndex} / ${sampleCount}`, 5, 15)
+	}
+
+	function drawPosenetResultGoodEnouth(canvasEl, posenetResult){
+		let isGoodEnough = DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult)
+		const context = canvasEl.getContext('2d');
+		if( isGoodEnough === true ){
+			// context.fillStyle = 'black';
+			// context.fillText('ok', 5, 45);
+		}else{
+			context.fillStyle = 'red';
+			context.fillText('BAD', 5, 30);
+		}
+	}
+
+	function drawDatasetRaw(canvasEl, classIndex, sampleIndex){
+		let imageEl = imagesEl[classIndex][sampleIndex]
+		let posenetResult = datasetRaw.posenetResults[classIndex][sampleIndex]
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		draw posenetResult
+		//////////////////////////////////////////////////////////////////////////////
+		let resultsViewer = new mlPosenet.ResultsViewer(canvasEl)
+		const posenetParameters = mlPosenet.Parameters.Sample
+		// TODO this function doing imageEl itself is not a clean architecture
+		// posenetParameters.output.showPoints = false
+		// posenetParameters.output.showSkeleton = false
+		resultsViewer.update(posenetResult, imageEl, posenetParameters)
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		display CLASS_NAMES
+		//////////////////////////////////////////////////////////////////////////////
+		drawClassName(canvasEl, classIndex, sampleIndex, datasetRaw.posenetResults[classIndex].length)
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		display if example is good enough
+		//////////////////////////////////////////////////////////////////////////////
+		drawPosenetResultGoodEnouth(canvasEl, posenetResult)
+	}
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		loadImageAsync
+	//////////////////////////////////////////////////////////////////////////////
+
+	async function loadImageAsync(url){
+		return new Promise((resolve, reject) => {
+			let imageEl = document.createElement('img')
+			imageEl.crossOrigin = ''
+			imageEl.addEventListener('load', function(){
+				resolve(imageEl)
+			})
+			imageEl.addEventListener('error', function(){
+				reject(imageEl)
+			})
+			imageEl.src = url
+		})
+	}
+
+})()
+</script>

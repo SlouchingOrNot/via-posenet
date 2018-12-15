@@ -1,0 +1,361 @@
+- create a github orga slouching-or-not
+  - be sure to recreate the history
+  - https://github.com/SlouchingOrNot/ml-posenet
+  - https://github.com/SlouchingOrNot/via-posenet
+  - https://github.com/SlouchingOrNot/via-mobilenet
+  - find better name for the repositories
+- give up this idea of predict-skins ???
+  - it induce a lot of complexity
+  - how to handle that ? i need an actual application i will use everyday. it needs to be that useful
+  - first define what this application needs
+  - what about just including a js into the predict
+    - send app event at the window level
+  - what matter is more the sound/notification than the predict UI
+  - do a getmdl UI ? simple and consistent
+  - event with a type - better for extansibility - 'RawPredictionEvent'
+  - add confidence number in the prediction
+    - RawConfidence
+  - from 'RawPrediction', create 'smoothedPrediction'
+  - from 'RawPrediction', create 'RawBestClassChange'
+  - from 'smoothedPrediction', create 'SmoothedBestClassChange'
+  - code all that into predict-skin.html just listen to RawPredictionMessage and create RawPredictionEvent with it
+- in model-predict.html - do a high-water low-water mechanism for offset-y
+  - else it is super possible that the class will be shaky in skin-predict
+- in module-predict.html - load the dataset+augmentationPolicy from the localStorage
+  - they should be written when the learning is completed, thus dataset+augmentation in model-predict always reflect the stored model
+- in module-predict.html - store the posenetOffset in local storage
+- dataset: check current dataset to see if the picture are ok to publish
+- do jsdoc whenever possible
+- fill all the 'CODE SEPARATOR' everywhere
+  - do a search to find them
+- make it work on mobile.... ? is it worthy ?
+  - see how hard, it is and based on that, decide
+  - does it work on mobile ? dont fix the phone holder issue but irrelevant
+  - at least on android
+  - to make webcam + AI work on IOS will be a pain
+- ultimate feature vector?
+  - height of the face - average all 5 points composing the face
+  - distance between face and shoulder line
+  - width between eyes, between ears and between shoulder
+  - is that true ?? what about actually trying it
+  - how to code a distance, this is 1dimension ? currently feature vector are 2d coordinates.
+  - what about simply the distance in the x components and 0 in the y components...
+  - anyway all this is flatten as a first layer of the model..
+  - which kind of feature normalisation you will do on those values ?
+  - are they created from posenetResult when building a feature vector
+- copy everything source locally
+  - model for posenet
+  - DONE tensorflow.js - tfjs
+- DONE in model-predict.html - display confidence on screen
+- DONE dataset: delete obsolete datasets
+- DONE dataset: create better default for dataset+augmetnation policy in the apps
+- DONE do the actual cool looking heatmap
+  - with the .js in a minilibrarty in another file
+  - http://zhangwenli.com/blog/2015/06/12/drawing-heatmap-with-html-canvas/
+  - https://github.com/mourner/simpleheat
+- DONE for model predict.html offsetY, put that into datasetProcessing
+- DONE in model-predict.html - the display on the video and on the heatmap are not done at the proper moment
+  - heatmap posenet should be display even if not 'goodEnoughForLearning'
+  - video posenet should not reflect posenetOffsetY - only the actual detection
+- DONE in model-predict.html - change the layout - make it minimal not ugly
+  - make all the options hidden by default
+  - done if not valid posenetResult, when display it on the canvas...
+- DONE display the confusion matrix in model-learn.html
+  - show accuracy per class and confusion matrix in -predict
+  - where to display it... one need all the dataset... in model-learn.html                                                           
+  - https://storage.googleapis.com/tfjs-vis/mnist/dist/index.html example with tfjs-vis
+  - make a button to load current model in model-learn.html
+  - https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/
+  - https://www.youtube.com/watch?v=8Oog7TXHvFY
+- DONE when doing the webcam in -predict and in -build, handle the case there is no webcam
+  - if an error occur just do a alert()
+- DONE Dataset: produce canonical dataset. the one which will be used for publish
+  - good3 => low-isSlouching__high-notSlouching
+  - good4 => low-isSlouching__middle-notSlouching
+- DONE in dataset-build.html, display result of posenetResult in dataset-build.html with a opt-in checkbox
+- DONE add skin-predict in app menu
+- DONE how can i detect absence in front of the camera - YES
+  - if featureVector keypoint less than 0.2 then considered not on the video
+  - if average of keypoint score is less than 0.4 then considered absent
+  - emit this as a camera-status in model-predict.html
+- DONE in skin-predict.html - add a mute button
+- NOGO - maybe later - make feature-vector-policy as a app url parameter ??
+  - allow to tune the normalize-facecenter-xy, normalized-facecenter-only-x
+  - allow the experimental distance-feature vector
+  - similar to the augmentation policy
+  - several policy are registered
+  - this is a select in the UI
+  - the selected feature-vector-policy is the one applied
+  - model-learn.html and model-predict.html needs to be changed
+  - what about dataset-view.html ? it contains featureVectors heatmap and thus needs to be modified too
+    - should i remove featureVector heatmap from dataset-view.html
+- NOTNOW When saving a model, save it by how it has been trained ? - seems too complex
+  - thus one can learn multiple versions, and then try them
+  - suffix-${datasetName}-${augmentationPolicy} will be ok for now, may be extended later
+  - get predict.html to select the model
+  - have a 'clear all save model' in learn.html
+- NOGO draw a better heat map for feature vector
+  - http://zhangwenli.com/blog/2015/06/12/drawing-heatmap-with-html-canvas/
+- DONE 'vendor/tfjs-model-posenet.min.js'
+  - rename that tfjs-models-posenet.js
+  - good derived from the github name
+  - https://github.com/tensorflow/tfjs-models/tree/master/posenet
+- DONE move DatasetProcessing.removeTiltDatasetRaw(datasetRaw) AFTER augmentation in learning ?
+  - test if it works well - learning + predict - if so, do it.
+  - you remove tilt in predict so during prediction, the model only see horizontal lines, so it has to learn
+- DONE in model-predict.html allow to have a y offset to be applied to posenetKeypoint
+  - allow to tune the camera angle
+- DONE do a camera calibration in model-predict.html
+  - display the feature vectors heat map of the sample set, and on top of it display the feature vector creating from the current posenetResult
+  - display the feature vectors of the current image - if the personn in front of the camera isSlouching, or notSlouching
+  - the distance between those 2 images will give how the model can generalized to the current personn setup
+  - i can provide a number for this distance. sumSquareDistanceKeypoint between current position and average of dataset
+  - FOUND IT: you get the feature vector in model-predict.html as you need to predict the current posenetResult
+    - just display it on top of the featureVector HeatMaps
+  - should i add a camera-calibration.html ?
+    - currently nobody no apps got webcam + loading datasetRaw...
+    - so if i add it in a applications it will become like doing 2 apps in one... messy
+    - if so, which application should i fork
+- DONE do a camera-calibration.html ? NO do pick model-predict.html
+  - yeah it seems like model-predict.html would be good... especially because camera calibration happen at the same time of model-predict
+  - DONE display webcam
+  - load datasetRaw (with all the UI) to pick the dataset
+  - display the featureVector heatmap
+  - DONE extract posenetResult from the webcam
+  - DONE build the feature Vector
+  - display this feature vector on a canvas (or two)
+  - use CSS to put current featureVector canvas on top of the featureVector heatmaps for each class
+- DONE strangely the augmentation version of keeping only isGoodEnough is not removing the same as the DatasetProcessing version
+  - there is a bug, somewhere
+  - where it is ?
+- DONE change the message `Removing rawData as not GoodEnough ${classIndex}/${sampleIndex}`
+  - to get the className instead of the classIndex
+- DONE create a dataset-processing.js
+  - DONE DatasetProcessing.balanceClassesDataset(datasetRaw)
+  - DatasetProcessing.removeNotGoodEnoughSamples(datasetRaw)    - do that before .balanceClassesDataset()
+  - DatasetProcessing.removeTiltDatasetRaw(datasetRaw)
+  - DatasetProcessing.removeTiltPosenetResult(posenetResult)
+  - DONE DatasetProcessing.isPosenetResultGoodEnough
+    - remove DatasetFeature.posenetResultGoodEnoughToLearn
+  - DONE DatasetProcessing.clonePosenetResult
+    - remove DatasetAugmentation.\_clonePosenetResult
+    - remove import DatasetAugmentation when no more needed
+  - DatasetProcessing.lerpPosenetResult
+    - remove DatasetAugmentation.\_linearInterpolationKeypoint
+    - remove import DatasetAugmentation when no more needed
+  - DatasetProcessing.createFaceCenterKeypoint
+    - remove DatasetFeature.createFeatureVector
+- DONE create a DatasetProcessing.removePoorSample(datasetRaw)
+  - change the DatasetAugmentation to have an assert on not good enougth, instead of a display+ignore
+  - change the DatasetFeature the same way
+- DONE Fix posenet smoothering - should not use private functions
+  - currently it use a private function DatasetAugmentation.\_lerpPosenetResult and \_clonePosenetResult
+  - move all that to DatasetProcessing
+- DONE dataset imbalanced - https://twitter.com/jerome_etienne/status/1066759290688540673
+  - blog about it https://towardsdatascience.com/dealing-with-imbalanced-classes-in-machine-learning-d43d6fa19d2
+  - how to handle it
+    - simply oversample the class which is underrepresented
+    - aka pick a random sample of the underrepresented class, and duplicated it, until both class got the same number of sample
+  - where to code it
+    - just before the augmentation
+    - create a dataset-balancer.js
+    - current dataset 'dataset' is very unbalanced
+- DONE idea of normalisation
+  - average the Y between both eyes, ears, shoulders
+  - reduce the influence of tilt of the eyes, ears, shoulders.... which are irrlevant to the slounchingOrNot problem
+  - DatasetProcessing.removeTiltPosenetResult(posenetResult)
+  - additionally reduce the noise in the original posenet predictions
+  - add that to DatasetProcessing
+- DONE move some DatasetAugmentation posenetResult processing somewhere else
+  - create a dataset-processing.js
+  - create a ml-posenet-result ?
+  - or more ml-posenet-utils.js. Take opportunity to clean it from unused function
+  - what about simply moving them in dataset-raw.js ... it seems clearly a pure posenetResult place
+- DONE do a posenetResult smoother
+  - it is important in the dataset-build.html to remove noise from the dataset-raw
+  - it is good for visualisation in model-predict.html
+  - it remove the shaking of predictions in model-predict.html
+- DONE data augmentation by linear interpolation of positions
+  - take one sample of isSlouching and another of notSlouching
+  - generate an augmented sample with 0.3 isSlouching and 0.7 notSlouching... and say it is not slouching
+  - allow to generate all the intermediate cases without getting them in the dataset
+  - how to pair 2 posenet result ?
+    - all augmentation are about transformation functions
+    - so write the transformation function which receive 2 results and a 0-1 ratio
+    - change augmentationFunction(classIndex, posenetResult) to
+    - augmentationFunction(posenetResults, classIndex, sampleIndex)
+    - then inside this function pair it with a random sample of the other class
+- DONE use the same webcam function in -build and in -predict
+- DONE display manual estimator in -build.html
+  - remove it from predict ? yes for now
+- DONE have dataset-view to view images IIF a button is clicked
+- DONE have model-learn.html to start learning IIF a button is clicked
+- DONE have model-learn.html to display current learning activity on the html page...
+  - currently only on console.log
+
+---
+
+
+
+
+- DONE refactor data augmentation
+  - DONE implement scale
+  - do i need rotation ?
+  - all that around the nose coordinate
+- DONE clean up dataset-feature.js
+- DONE trim dataset-feature
+  - i keep way too much data in the feature vector
+  - especially as the score is removed from the feature vector
+  - keep only the keypoints that matter
+- DONE display feature vector - heat map
+- DONE in augmentation, use random with normal distribution, not uniform distribution
+- DONE finish faster dataset-tensor input
+  - in model-learn2.html
+  - datasetTensor.addSample2 <- make this one the default one
+  - DatasetFeature.rawDataToFeatureVectors <- this should not return an arraqy
+- DONE make dataset-feature displayable in dataset-view.html
+  - select input for the augmented-policy
+  - redisplay on each value change
+- DONE pass imageDataURLs in datasetRaw.loadClass()
+- DONE make dataset-tensor faster
+  - it may take up to 14seconds for no reason
+  - likely by avoiding the concatenation
+  - just create it immediatly at the proper size
+- DONE rename featuresPerClass into featureVectors in dataset-feature.js
+- DONE rename feature-vector.js into dataset-feature.js
+- DONE rename raw-data.js into dataset-raw.js
+
+
+---
+- do a test set - training-set, validation-set, test-set ?
+  - good to know the value of your model
+  - reduce even more the size of the training set tho
+  - so make larger data set :)
+- larger dataset - then experiment with the bending-forward
+  - you want the AI to find out by itself this formula
+- https://itnext.io/18-tips-for-training-your-own-tensorflow-js-models-in-the-browser-3e40141c9091
+- time to reread the tutorial of google about AI
+  - https://developers.google.com/machine-learning/crash-course/
+  - especially the one on classification https://developers.google.com/machine-learning/crash-course/classification/video-lecture
+  - slouching or not is a classification question
+  - read the description of how to build the layers of a neural network
+    - https://developers.google.com/machine-learning/crash-course/introduction-to-neural-networks/anatomy
+- test with a clear dataset -  slouching straight and bending forward
+- how come the validation accuracy is 1??
+  - seems like way too small dataset
+  - data augmentation is needed to increase the dataset
+- try much larger dataset
+  - 200 images per class - 1000 images per class
+  - multiple personn per dataset
+- which feature are relevant to it. how to express it ? canonisation
+- 'Especially if you have implemented some preprocessing logic like random cropping, padding, squaring, centering, mean subtraction or what else'
+- DONE how to handle the absence of keypoints on posenet ?
+  - is that just a threshold in the .score. YES
+  - if score < 0.5 this is not present
+- DONE review isGoodEnough
+  - this is remove ALL data of when there is nobody in front of the camera - due to .score
+  - all feature are present ALL the time.. so why testing for their presence - it seems uselessly confusing
+  - as i do test the featureVector in -predict either, this is kindof similar
+
+---
+- possible sample conversion - feature engineering
+  - IIF both eyes - both shoulders with good score
+  - normalize coordinates by eyesDistance/shouldersDistance
+    - to be scale independant
+- ERROR you dont give the score to the network
+  - but you filter if the score isnt good enougth
+  - is that the same ? no but go in the same direction
+  - should i give the score too
+
+- for the vautrage, the absolute height is important
+  - as the head will definitly be lower in the video
+  - the head may be further to the camera ?
+- what about playing with the angle between the features
+  - if slightly vautrage the angle between the rightShoulder-leftShoulder and
+    leftShoulder-leftEyes is slightly flatter
+
+- DONE implement a smoothers for the predicted class
+
+- what is i just give it the insight
+  - can it output the class index properly ?
+  - it become a simple regression problem
+  - so it should work, test it does ... just to be sure
+  - https://js.tensorflow.org/tutorials/fit-curve.html
+
+-
+
+---
+
+- do you need data augmentation ? is that the problem ?
+  - what others are doing ?
+  - translation left-right - not in centralized by nose
+  - variation in top bottom too - not in centralized by nose
+
+---
+- DONE try to graph with tfjs-vis history
+  - see if the bug is similar
+  - if not use the show.history
+  - same issue as with fitCallback
+- DONE make minimal UI for model-predict.html
+  - aka display the predicted class on the web page
+  - maybe implement a delay to avoid to be too shaky
+  - average over the last 20sec ? very good controls, very understandable
+- DONE to remove. use CLASS_INDEXES instead
+- DONE filename clarification
+  - rename RawDataLoader into RawData
+  - split model-learn.js into model-build.js and model-train.js
+  - rename dataset-tensor.js into dataset-tensor.js
+- DONE clean up all the old temporary files
+  - leave it clean as if you wont touch it again for some month
+
+- DONE in -learn.html - Create a graph of accuracy and loss over time
+  - tfjs-vis should be able to do that
+  - do prediction and recall too
+  - take code from tfjs examples - mnist is doing graph i believe
+- DONE complete the dataset-info.json stuff
+- DONE posenetResultsToSamplesValues => rawDataToFeatureVectors()
+  - rawDataGoodEnoughForFeatureVector => rawDataGoodEnoughForFeatureVector()
+- DONE try to run the learning on the pc to test the speed variation
+  - open the pc laptop without external display/keyboard/mouse
+  - open chrome and go to the webpage model-learn.html hosted on the mac
+  - NOTE: issue with the webcam as i dont have https in this case.
+  - NOTE: beyond that all cool
+- DONE raw-data.js => posenetResultLoader.js
+- DONE model-constants => model-constants.js
+- DONE feature-vector.js => feature-vectors.js
+  - do the one-hot encoding in this file
+---
+- DONE distance2d(middle eyes, middle shoulder) / distance(leftShoulder, rightShoulder)
+  - distance2d(middle eyes, middle shoulder) / distance(leftEyes, rightEyes)
+  - display this in predict
+- DONE rename all posenetposes into posenetResult
+- DONE display posenet results in dataset-build
+- DONE display the dataset
+  - dataset-viewer.html
+  - image, posenet on canvas, isGoodEnougth sample, slouchingModule prediction, classIndex, sampleIndex, posenetPoses, sampleValues json
+    - for each images
+  - dataset-viewer
+    - filter by class
+- DONE put all constant in their other own .js
+  - no need to duplicate
+- DONE centralize by the nose
+- DONE refactor dataset-build : make it easier to add element in the dataset
+  - do it more automatic
+  - make unzip automatic
+  - webpage allows to chose the basename of the downloadable file
+    - it should be the name of the folder when you unzip too
+  - make it possible to capture multiple class
+    - modify the jszip - it has to be unzipable inside dataset/
+    - make a npm script with sourceDir as parameters to unzip the dataset
+      - npm run importDataSet -- ~/Download/dataset-ABCD
+    - one button to collect per class - with continuous grabbing like in via-mobilenet
+    - display log 'isSlouching+image' - thus no more order
+  - do package.json instead of Makefile all the time
+  - basename = sample-${Date.now at boottime}-${index}.jpg
+    - thus no conflict between 2 capture
+  - get posenetposes in capture thus no need for 2 steps
+  - normalize the dataset name
+    - basename.jpg
+    - basename-posenet.json
+  - rename -capture-webcam.html into dataset-build.html
+  - remove -extract-posenet.html

@@ -1,0 +1,359 @@
+<body>
+	<!-- links in page header -->
+	<a href='' onclick='location.href = `dataset-build.html${location.hash}`; event.preventDefault();'>build</a> -
+	<a href='' onclick='location.href = `dataset-view.html${location.hash}`; event.preventDefault();'>view</a> -
+	<a href='' onclick='location.href = `model-learn.html${location.hash}`; event.preventDefault();'>learn</a> -
+	<a href='' onclick='location.href = `model-predict.html${location.hash}`; event.preventDefault();'>predict</a>
+	<br/><br/><br/>
+
+	<video id='sourceVideo' playsinline style=' -moz-transform: scaleX(-1);
+	        -o-transform: scaleX(-1);
+	        -webkit-transform: scaleX(-1);
+	        transform: scaleX(-1);
+		display: none;
+	        '>
+        </video>
+	<div id='videosContainerID' style='text-align: center; height: 224px;'>
+	</div>
+	<br/>
+	<button id='captureIsSlouchingButton'>capture isSlouching</button>
+	<button id='captureNotSlouchingButton'>capture notSlouching</button>
+	<br/>
+	<button id='downloadButton'>download</button>
+	<button id='clearButton'>clear</button>
+	<input id='datasetName' type="text" value="dataset" placeholder="folder name" title='It will be used as folder name in .zip' />
+	<hr/>
+
+	<!-- display posenetResult -->
+	<div>
+		<label title='enable to display posenetResult live'>Display posenet result <input type="checkbox" id="posenetResultEnableID"></input></label>
+	</div>
+	<pre id='posenetResultID'></pre>
+
+	<!-- display application status -->
+	<label title='Magic manual insight - aka hand crafted formula for the classification'>Magic Insight: <span id='magicInsightID'></span></label>
+
+
+	<h1>Captured Images</h1>
+	images isSlouching <span id='isSlouchingCount'>0</span>
+	<br/>
+	images notSlouching <span id='notSlouchingCount'>0</span>
+	<br/>
+	<div id='capturedImages'>
+	</div>
+</body>
+
+<!-- Load TensorFlow.js -->
+<!-- <script src='https://unpkg.com/@tensorflow/tfjs'></script> -->
+<script src='vendor/tensorflow.min.js'></script>
+<!-- Load Posenet -->
+<!-- <script src='https://unpkg.com/@tensorflow-models/posenet'></script> -->
+<script src='vendor/tfjs-model-posenet.min.js'></script>
+
+<script src='./vendor/jszip.min.js'></script>
+<script src='./vendor/FileSaver.min.js'></script>
+
+<script type='module'>
+import mlPosenet from '../../contribs/ml-posenet/src/index.js'
+import ModelConstants from '../src/model-constants.js'
+import DatasetProcessing from '../src/dataset-processing.js';
+
+(async function(){
+	// init bootTime - used for the basename of each sample
+	var bootTime = Date.now()
+	let cst = ModelConstants
+	try {
+		var videoEl = await mlPosenet.Utils.setupCamera()
+	}catch(myException){
+		alert(`cant find web camera due to "${myException.message}"`)
+	}
+
+	function captureVideoToCanvas(videoEl, size){
+		var canvasEl = document.createElement('canvas')
+		var context = canvasEl.getContext('2d')
+		canvasEl.width = canvasEl.height = size
+		context.drawImage(videoEl, 0, 0)
+		return canvasEl
+	}
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		Load model
+	//////////////////////////////////////////////////////////////////////////////
+	console.log('PosenetModel Loading....')
+	console.time('PosenetModel Load')
+	const posenetParameters = mlPosenet.Parameters.Sample
+	const posenetModel = await posenet.load(+posenetParameters.input.mobileNetArchitecture)
+	console.timeEnd(`PosenetModel Load`)
+
+	console.log('PosenetModel warming up')
+	console.time('PosenetModel warmUp')
+	await mlPosenet.Utils.warmUp(posenetModel);
+	console.timeEnd('PosenetModel warmUp')
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		Code Separator
+	//////////////////////////////////////////////////////////////////////////////
+
+	var sourceElements = Array.from(new Array(cst.NUM_CLASSES), () => [])
+	var posenetResults = Array.from(new Array(cst.NUM_CLASSES), () => [])
+
+	async function processCapture(classIndex){
+		let basename = `sample-${Date.now()}`
+		var sampleIndex = sourceElements[classIndex].length
+
+		// get webcam content
+		let sourceElement = captureVideoToCanvas(videoEl, 224)
+
+		// estimate poses
+		// let posenetResult = await mlPosenet.Utils.estimatePoses(sourceElement, posenetModel, posenetParameters);
+		if( smoothedPosenetResult === null ){
+			console.log(`skipping rawData as no smoothedPosenetResult are available`)
+			return
+		}
+		let posenetResult = smoothedPosenetResult
+
+		// discard this images if isGoodEnough === false
+		var isGoodEnougth = DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult)
+		if( isGoodEnougth === false ){
+			console.log(`skipping rawData as not GoodEnough`)
+			return
+		}
+
+		// store results
+		sourceElements[classIndex][sampleIndex] = sourceElement
+		posenetResults[classIndex][sampleIndex] = posenetResult
+
+		// update UI
+		document.querySelector('#capturedImages').prepend(sourceElement)
+		document.querySelector(`#${cst.CLASS_NAMES[classIndex]}Count`).innerHTML = sampleIndex
+	}
+
+
+	let smoothedPosenetResult = null
+	;(function(){
+		//////////////////////////////////////////////////////////////////////////////
+		//		draw posenetResult
+		//////////////////////////////////////////////////////////////////////////////
+		let canvasEl = document.createElement('canvas')
+		canvasEl.width = canvasEl.height = 256
+		canvasEl.style.width = canvasEl.style.height = 256
+		// canvasEl.style.zoom = 2
+
+		document.querySelector('#videosContainerID').append(canvasEl)
+		const context = canvasEl.getContext('2d');
+
+		let resultsViewer = new mlPosenet.ResultsViewer(canvasEl)
+		const posenetParameters = mlPosenet.Parameters.Sample
+
+		requestAnimationFrame(async function callback(){
+			// get webcam content
+			let sourceElement = captureVideoToCanvas(videoEl, 224)
+			// estimate poses
+			let posenetResult = await mlPosenet.Utils.estimatePoses(sourceElement, posenetModel, posenetParameters);
+
+			// NOTE: do not apply isGoodEnough test on purpose
+			// - this test may change during development and we want the dataset to be independant.
+			// - It is more flexible to apply the test after loading the dataset.
+
+			// apply lerp on posenetResult - important to reduce the noise in the dataset
+			if( smoothedPosenetResult === null )	smoothedPosenetResult = DatasetProcessing.clonePosenetResult(posenetResult)
+			DatasetProcessing.lerpPosenetResult(smoothedPosenetResult, smoothedPosenetResult, posenetResult, 0.5)
+			posenetResult = smoothedPosenetResult
+
+			// display posenetResult
+			resultsViewer.update(posenetResult, sourceElement, posenetParameters)
+
+			////////////////////////////////////////////////////////////////////////
+			//	posenetResultEnableID
+			////////////////////////////////////////////////////////////////////////
+			
+			if( document.querySelector('#posenetResultEnableID').checked === true ){
+				let htmlContent = JSON.stringify(posenetResult, null, '\t')
+				document.querySelector('#posenetResultID').innerHTML = htmlContent
+			}else{
+				document.querySelector('#posenetResultID').innerHTML = ''
+			}
+
+			//////////////////////////////////////////////////////////////////////////////
+			//		display if example is good enough
+			//////////////////////////////////////////////////////////////////////////////
+			let isGoodEnough = DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult)
+			if( isGoodEnough === true ){
+				// context.fillStyle = 'black';
+				// context.fillText('ok', 5, 45);
+			}else{
+				context.fillStyle = 'red';
+				context.fillText('BAD', 5, 30);
+			}
+
+			//////////////////////////////////////////////////////////////////////////////
+			//		Manual Estimator
+			//////////////////////////////////////////////////////////////////////////////
+
+			;(function(){
+				// return
+				let keypoints = posenetResult[0].keypoints
+
+				let distanceBetweenEyes = mlPosenet.KeypointUtils.computeDistanceBetweenParts(keypoints, 'leftEye', 'rightEye')
+				let distanceBetweenShoulders = mlPosenet.KeypointUtils.computeDistanceBetweenParts(keypoints, 'leftShoulder', 'rightShoulder')
+
+				let keypointMiddleEyes = mlPosenet.KeypointUtils.computeMiddlePartsKeypoint(keypoints, 'leftEye', 'rightEye')
+				let keypointMiddleShoulders = mlPosenet.KeypointUtils.computeMiddlePartsKeypoint(keypoints, 'leftShoulder', 'rightShoulder')
+
+				let distanceMiddleEyesShoulders = mlPosenet.KeypointUtils.computeDistanceBetweenKeypoints(keypointMiddleEyes, keypointMiddleShoulders)
+
+				// let canonizedDistanceBetweenMiddleEyesShoulders = distanceMiddleEyesShoulders / distanceBetweenEyes
+				let canonizedDistanceMiddleEyesShoulders = distanceMiddleEyesShoulders / distanceBetweenShoulders
+
+				// Do the prediction 
+				let predictedClassIndex = canonizedDistanceMiddleEyesShoulders < 0.675 ? cst.CLASS_INDEXES.isSlouching : cst.CLASS_INDEXES.notSlouching
+
+				// console.log('manual insight', cst.CLASS_NAMES[predictedClassIndex], canonizedDistanceMiddleEyesShoulders.toFixed(2))
+
+				document.querySelector('#magicInsightID').innerHTML = `${cst.CLASS_NAMES[predictedClassIndex]} ${canonizedDistanceMiddleEyesShoulders.toFixed(2)}`
+			})()
+
+			//////////////////////////////////////////////////////////////////////////////
+			//		Code Separator
+			//////////////////////////////////////////////////////////////////////////////
+			requestAnimationFrame(callback)
+		})
+	})()
+
+
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		Code Separator
+	//////////////////////////////////////////////////////////////////////////////
+	function captureContinuous(classIndex, cssSelector){
+		let capturing = true
+		// handle capture stop
+		document.querySelector(cssSelector).addEventListener('mouseup', mouseUpCallback)
+		document.querySelector(cssSelector).addEventListener('mouseleave', mouseUpCallback)
+		function mouseUpCallback(){
+			document.querySelector(cssSelector).removeEventListener('mouseup', mouseUpCallback)
+			document.querySelector(cssSelector).removeEventListener('mouseleave', mouseUpCallback)
+			capturing = false
+		}
+		// loop and capture periodically
+		let timerId = setInterval( async () => {
+			if( capturing === false ) clearInterval(timerId)
+			await processCapture(classIndex)
+		}, 1000/10)
+	}
+
+	async function captureOnce(classIndex){
+		await processCapture(classIndex)
+	}
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		Code Separator
+	//////////////////////////////////////////////////////////////////////////////
+	document.querySelector('#captureIsSlouchingButton').addEventListener('mousedown', () => {
+		// captureOnce(cst.CLASS_INDEXES.isSlouching)
+		captureContinuous(cst.CLASS_INDEXES.isSlouching, '#captureIsSlouchingButton')
+	})
+
+	document.querySelector('#captureNotSlouchingButton').addEventListener('mousedown', () => {
+		// captureOnce(cst.CLASS_INDEXES.notSlouching)
+		captureContinuous(cst.CLASS_INDEXES.notSlouching, '#captureNotSlouchingButton')
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		Handle dataset clear
+	//////////////////////////////////////////////////////////////////////////////
+
+	document.querySelector('#clearButton').addEventListener('click', function(){
+		for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
+			document.querySelector(`#${cst.CLASS_NAMES[classIndex]}Count`).innerHTML = 0
+		}
+
+
+		// remove the canvas from the dom
+		let domElements = document.querySelectorAll('#capturedImages canvas')
+		Array.from(domElements).forEach((domElement) => {
+			domElement.parentNode.removeChild(domElement)
+		})
+
+		sourceElements = Array.from(new Array(cst.NUM_CLASSES), () => [])
+		posenetResults = Array.from(new Array(cst.NUM_CLASSES), () => [])
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		handle download
+	//////////////////////////////////////////////////////////////////////////////
+
+	document.querySelector('#downloadButton').addEventListener('click', async function(){
+		//////////////////////////////////////////////////////////////////////////////
+		//		init zip
+		//////////////////////////////////////////////////////////////////////////////
+		let zip = new JSZip();
+		var datasetName = document.querySelector('#datasetName').value
+		let zipDatasetFolder = zip.folder(datasetName);
+		let zipFolders = {
+			isSlouching: zipDatasetFolder.folder('isSlouching'),
+			notSlouching: zipDatasetFolder.folder('notSlouching'),
+		}
+
+		let datasetInfo = {
+			posenetResultURLs: Array.from(new Array(cst.NUM_CLASSES), () => []),
+			imageURLs: Array.from(new Array(cst.NUM_CLASSES), () => [])
+		}
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		add images and posenetResults file into the zip
+		//////////////////////////////////////////////////////////////////////////////
+		for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
+			let className = cst.CLASS_NAMES[classIndex]
+			for(let sampleIndex = 0; sampleIndex < posenetResults[classIndex].length; sampleIndex++){
+				let basename = `sample-${bootTime}-${sampleIndex}`
+				var sourceElement = sourceElements[classIndex][sampleIndex]
+				let posenetResult = posenetResults[classIndex][sampleIndex]
+
+				// add sourceElement into the .zip
+				let data64URL = sourceElement.toDataURL('image/jpeg');
+				data64URL = data64URL.replace(/^data:image\/jpeg;base64,/,'')
+				zipFolders[className].file(`${basename}.jpg`, data64URL, {
+					base64: true
+				});
+
+				// add posenetResult into the .zip as json
+				let content = JSON.stringify(posenetResult, null, '\t')
+				zipFolders[className].file(`${basename}.posenet.json`, content);
+
+				// update datasetInfo
+				datasetInfo.imageURLs[classIndex][sampleIndex] = `${className}/${basename}.jpg`
+				datasetInfo.posenetResultURLs[classIndex][sampleIndex] = `${className}/${basename}.posenet.json`
+			}
+		}
+console.log('posenetResults', posenetResults)
+console.log('sourceElements', sourceElements)
+console.log('datasetInfo', datasetInfo)
+		//////////////////////////////////////////////////////////////////////////////
+		//		generate the dataset-info.json
+		//////////////////////////////////////////////////////////////////////////////
+
+		let content = JSON.stringify(datasetInfo, null, '\t')
+		zipDatasetFolder.file(`dataset-info.json`, content);
+
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		now generate the .zip and download it
+		//////////////////////////////////////////////////////////////////////////////
+		// generate the .zip and make it download
+		let base64 = await zip.generateAsync({type:"blob"})
+		saveAs(base64, `${datasetName}.zip`);
+
+		// old version - using a base64 url - limited in size
+		// let base64 = await zip.generateAsync({type:"base64"})
+		// window.location = "data:application/zip;base64," + base64;
+	})
+
+	//////////////////////////////////////////////////////////////////////////////
+	//		App is Ready
+	//////////////////////////////////////////////////////////////////////////////
+
+	console.log('#### Application Ready')
+
+})()
+</script>
