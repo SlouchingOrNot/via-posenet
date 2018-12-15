@@ -1,4 +1,12 @@
-- rename predict-skins into predict-ui-plugins
+- in model-predict.html - do a high-water low-water mechanism for offset-y
+  - else it is super possible that the class will be shaky in skin-predict
+- in module-predict.html - load the dataset+augmentationPolicy from the localStorage
+  - they should be written when the learning is completed, thus dataset+augmentation in model-predict always reflect the stored model
+  - It is confusing buggy to store them inthe URL, but the model in the indexdb
+- in module-predict.html - store the posenetOffset in local storage
+- remove any UI from model-predict.html, move it in plugins-ui-plugins/
+- add link to github repo
+- DONE rename predict-skins into predict-ui-plugins
 - DONE create a github orga slouching-or-not
   - be sure to recreate the history
   - https://github.com/SlouchingOrNot/ml-posenet
@@ -20,11 +28,6 @@
   - from 'RawPrediction', create 'RawBestClassChange'
   - from 'smoothedPrediction', create 'SmoothedBestClassChange'
   - code all that into predict-skin.html just listen to RawPredictionMessage and create RawPredictionEvent with it
-- in model-predict.html - do a high-water low-water mechanism for offset-y
-  - else it is super possible that the class will be shaky in skin-predict
-- in module-predict.html - load the dataset+augmentationPolicy from the localStorage
-  - they should be written when the learning is completed, thus dataset+augmentation in model-predict always reflect the stored model
-- in module-predict.html - store the posenetOffset in local storage
 - dataset: check current dataset to see if the picture are ok to publish
 - do jsdoc whenever possible
 - fill all the 'CODE SEPARATOR' everywhere

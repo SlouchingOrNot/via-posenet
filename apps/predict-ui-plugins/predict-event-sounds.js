@@ -10,9 +10,9 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	if( slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching ){
 		// playSound('predict-skins/sounds/265012__sethlind__toaster-oven-ding.wav', 0.05)
 		// playSound('predict-skins/sounds/341601__mike-stranks__gentle-stream.wav', 0.3)
-		playSound('predict-skins/sounds/351167__reitanna__that-s-bad.wav', 0.3)
+		playSound('predict-ui-plugins/sounds/351167__reitanna__that-s-bad.wav', 0.3)
 	}else if( slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.notSlouching ){
-		playSound('predict-skins/sounds/277021__sandermotions__applause-2.wav', 0.1)
+		playSound('predict-ui-plugins/sounds/277021__sandermotions__applause-2.wav', 0.1)
 	}else {
 		console.assert(false, `unknown smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
 	}
