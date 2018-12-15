@@ -1,4 +1,4 @@
-# predict skins 2
+# predict ui plugins
 
 ## What is it ?
 It is kindof UI plugins which listen to slouchingOrNotEvent event generated on window domElement.

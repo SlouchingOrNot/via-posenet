@@ -145,9 +145,18 @@
 		////////////////////////////////////////////////////////////////////////
 		//		Handle #posenetOffsetYLabelID
 		////////////////////////////////////////////////////////////////////////
+		if( localStorage.getItem('slouchingOrNot-predict-posenetOffsetY') !== null ){
+			let value = parseFloat(localStorage.getItem('slouchingOrNot-predict-posenetOffsetY'))
+			document.querySelector('#posenetOffsetYRangeID').value = value
+			document.querySelector('#posenetOffsetYLabelID').innerHTML = value
+		}
+
 		document.querySelector('#posenetOffsetYRangeID').addEventListener("input", function () {
 			var value = document.querySelector('#posenetOffsetYRangeID').value
+			// update UI
 			document.querySelector('#posenetOffsetYLabelID').innerHTML = value
+			// store new value in localStorage
+			localStorage.setItem('slouchingOrNot-predict-posenetOffsetY', value);
 		}, false);
 
 		//////////////////////////////////////////////////////////////////////////////

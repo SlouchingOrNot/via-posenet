@@ -3,7 +3,7 @@
 - in module-predict.html - load the dataset+augmentationPolicy from the localStorage
   - they should be written when the learning is completed, thus dataset+augmentation in model-predict always reflect the stored model
   - It is confusing buggy to store them inthe URL, but the model in the indexdb
-- in module-predict.html - store the posenetOffset in local storage
+- DONE in module-predict.html - store the posenetOffset in local storage
 - remove any UI from model-predict.html, move it in plugins-ui-plugins/
 - add link to github repo
 - DONE rename predict-skins into predict-ui-plugins
