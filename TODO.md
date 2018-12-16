@@ -1,11 +1,40 @@
+- TODO how to put the html of the predict-ui-plugins/
+  - just do 2 containers in the predict-html pages
+  - #predictUIPluginsContainerID
+  - #predictUIPluginsOptionsContainerID
+- in model-predict.html - move the feature map out of model-predict.html
+  - predict-camera-calibration.js
 - in model-predict.html - do a high-water low-water mechanism for offset-y
   - else it is super possible that the class will be shaky in skin-predict
+- remove any UI from model-predict.html, move it in plugins-ui-plugins/
+- dataset: check current dataset to see if the picture are ok to publish
+- do jsdoc whenever possible
+- fill all the 'CODE SEPARATOR' everywhere
+  - do a search to find them
+- make it work on mobile.... ? is it worthy ?
+  - see how hard, it is and based on that, decide
+  - does it work on mobile ? dont fix the phone holder issue but irrelevant
+  - at least on android
+  - to make webcam + AI work on IOS will be a pain
+- ultimate feature vector?
+  - height of the face - average all 5 points composing the face
+  - distance between face and shoulder line
+  - width between eyes, between ears and between shoulder
+  - is that true ?? what about actually trying it
+  - how to code a distance, this is 1dimension ? currently feature vector are 2d coordinates.
+  - what about simply the distance in the x components and 0 in the y components...
+  - anyway all this is flatten as a first layer of the model..
+  - which kind of feature normalisation you will do on those values ?
+  - are they created from posenetResult when building a feature vector
+- copy model locally
+  - look at posenet.js source to see how to do it
+  - DONE tensorflow.js - tfjs
 - DONE in module-predict.html - load the dataset+augmentationPolicy from the localStorage
   - they should be written when the learning is completed, thus dataset+augmentation in model-predict always reflect the stored model
   - It is confusing buggy to store them inthe URL, but the model in the indexdb
-- remove any UI from model-predict.html, move it in plugins-ui-plugins/
 - DONE in module-predict.html - store the posenetOffset in local storage
-- add link to github repo
+- add link to github repo in the example
+  - just a badge is ok
 - DONE rename predict-skins into predict-ui-plugins
 - DONE create a github orga slouching-or-not
   - be sure to recreate the history
@@ -28,28 +57,6 @@
   - from 'RawPrediction', create 'RawBestClassChange'
   - from 'smoothedPrediction', create 'SmoothedBestClassChange'
   - code all that into predict-skin.html just listen to RawPredictionMessage and create RawPredictionEvent with it
-- dataset: check current dataset to see if the picture are ok to publish
-- do jsdoc whenever possible
-- fill all the 'CODE SEPARATOR' everywhere
-  - do a search to find them
-- make it work on mobile.... ? is it worthy ?
-  - see how hard, it is and based on that, decide
-  - does it work on mobile ? dont fix the phone holder issue but irrelevant
-  - at least on android
-  - to make webcam + AI work on IOS will be a pain
-- ultimate feature vector?
-  - height of the face - average all 5 points composing the face
-  - distance between face and shoulder line
-  - width between eyes, between ears and between shoulder
-  - is that true ?? what about actually trying it
-  - how to code a distance, this is 1dimension ? currently feature vector are 2d coordinates.
-  - what about simply the distance in the x components and 0 in the y components...
-  - anyway all this is flatten as a first layer of the model..
-  - which kind of feature normalisation you will do on those values ?
-  - are they created from posenetResult when building a feature vector
-- copy everything source locally
-  - model for posenet
-  - DONE tensorflow.js - tfjs
 - DONE in model-predict.html - display confidence on screen
 - DONE dataset: delete obsolete datasets
 - DONE dataset: create better default for dataset+augmetnation policy in the apps

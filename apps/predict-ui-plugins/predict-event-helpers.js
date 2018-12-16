@@ -1,24 +1,3 @@
-////////////////////////////////////////////////////////////////////////
-//		Forward to parent window - for IFrame
-////////////////////////////////////////////////////////////////////////
-
-window.addEventListener('slouchingOrNotEvent', (domEvent) => {
-	let slouchingOrNotEvent = domEvent.detail
-
-	//////////////////////////////////////////////////////////////////////////////
-	//                iframe communication - LEGACY to remove
-	//////////////////////////////////////////////////////////////////////////////
-	sendEventToParentWindow(slouchingOrNotEvent)
-	function sendEventToParentWindow(messageContent) {
-		// if not running in a iframe
-		let isInIframe = window.self !== window.top ? true : false
-		if (isInIframe === false) return
-
-		// send the message to the parent window
-		window.parent.postMessage(messageContent, '*')
-	}
-}, false)
-
 
 ////////////////////////////////////////////////////////////////////////
 //		Handle 'smoothedPrediction' event
@@ -29,7 +8,7 @@ let historyMaxLength = 1
 window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	let slouchingOrNotEvent = domEvent.detail
 
-	// keep only 'smoothedPrediction' event
+	// keep only 'rawPrediction' event
 	if (slouchingOrNotEvent.type !== 'rawPrediction') return
 
 	// update bestClassesHistory

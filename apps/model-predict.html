@@ -307,11 +307,9 @@
 			//////////////////////////////////////////////////////////////////////////////
 			//		Estimate Pose
 			//////////////////////////////////////////////////////////////////////////////
-			// console.log('estimating poses...')
 			let startingTime = performance.now()
 			let posenetResult = await mlPosenet.Utils.estimatePoses(videoEl, posenetModel, posenetParameters)
 			let estimationTime = performance.now() - startingTime
-			// console.log(`Poses estimated in ${estimationTime.toFixed(2)} ms`)
 
 			// apply lerp on posenetResult
 			if (smoothedPosenetResult === null) smoothedPosenetResult = DatasetProcessing.clonePosenetResult(posenetResult)
@@ -335,7 +333,7 @@
 			DatasetProcessing.translateFixKeypointPositions(posenetResult, 0, posenetOffsetY)
 
 			//////////////////////////////////////////////////////////////////////////////
-			//		Convert to featureVector and do a prediction
+			//		Convert to featureVector
 			//////////////////////////////////////////////////////////////////////////////
 
 			// createa a featureVector
@@ -343,6 +341,13 @@
 
 			// filter posenetResult when they are not "good enough"
 			var isGoodEnough = DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult)
+			// honor isSeeingSomeoneID
+			var isSeeingSomeone = DatasetProcessing.posenetResultIsSeeingSomeone(posenetResult)
+
+			////////////////////////////////////////////////////////////////////////
+			//		do prediction
+			////////////////////////////////////////////////////////////////////////
+			
 			if (isGoodEnough === true) {
 				// predict the class based on this featureVector
 				const inputTensor = tf.tensor3d([featureVector]);
@@ -355,7 +360,6 @@
 				predictionsData[cst.CLASS_INDEXES.isSlouching] = 0
 				predictionsData[cst.CLASS_INDEXES.notSlouching] = 1
 			}
-
 
 			//////////////////////////////////////////////////////////////////////////////
 			//                process predictions
@@ -373,38 +377,12 @@
 			//		Update UI
 			////////////////////////////////////////////////////////////////////////
 
-			// honor isGoodEnough UI
-			if (isGoodEnough === true) {
-				document.querySelector('#posenetResultGoodEnoughID').innerHTML = 'yes'
-			} else {
-				document.querySelector('#posenetResultGoodEnoughID').innerHTML = '<span style="color:red;">NO</span>'
-			}
-
-			// honor isSeeingSomeoneID
-			var isSeeingSomeone = DatasetProcessing.posenetResultIsSeeingSomeone(posenetResult)
-			if (isSeeingSomeone === true) {
-				document.querySelector('#isSeeingSomeoneID').innerHTML = 'yes'
-			} else {
-				document.querySelector('#isSeeingSomeoneID').innerHTML = '<span style="color:red;">NO</span>'
-			}
-
 			// update isSlouchingFeatureHeatmapEl
 			for (let canvasEl of [isSlouchingFeatureHeatmapEl, notSlouchingFeatureHeatmapEl]) {
 				let context = canvasEl.getContext('2d')
 				context.clearRect(0, 0, canvasEl.width, canvasEl.height);
 				DatasetFeature.drawOneFeatureVector(context, featureVector)
 			}
-
-			// display result
-			document.querySelector('#bestClassNameID').innerHTML = cst.CLASS_NAMES[rawBestClass]
-			if (rawBestClass === cst.CLASS_INDEXES.isSlouching) {
-				document.querySelector('#bestClassNameID').style.color = 'red'
-			} else {
-				document.querySelector('#bestClassNameID').style.color = ''
-			}
-
-			// display predictionConfidenceID
-			document.querySelector('#predictionConfidenceID').innerHTML = `${Math.round(predictionsData[rawBestClass] * 100)}%`
 
 			//////////////////////////////////////////////////////////////////////////////
 			//		Notify CustomEvent for slouchingOrNotEvent
@@ -434,5 +412,6 @@
 	})()
 </script>
 
+<script type='module' src="predict-ui-plugins/predict-event-status.js"></script>
 <script type='module' src="predict-ui-plugins/predict-event-helpers.js"></script>
 <script type='module' src="predict-ui-plugins/predict-event-sounds.js"></script>
