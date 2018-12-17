@@ -13,6 +13,7 @@
 	<a href='' onclick='location.href = `../dataset-view.html${location.hash}`; event.preventDefault();'>view</a> -
 	<a href='' onclick='location.href = `../model-learn.html${location.hash}`; event.preventDefault();'>learn</a> -
 	<a href='../model-predict/index.html'>predict</a>
+
 	<br /><br /><br />
 
 
@@ -70,12 +71,12 @@
 					<input type="range" id="soundVolumeRangeID" min="0" max="1" value='0.5' step='0.01' title='Master Sound Volume' />
 					<label id='soundVolumeLabelID'>0.5</label>
 				</label>
-			</div>			
+			</div>
 			<div>
-					<label>BestClass Smoother :</label>
-					<input type="range" id="smoothedBestClassWidthRangeID" min="1" max="100" value='50' step='10' title='Smoothing the bestClass over X values' />
-					<label id='smoothedBestClassWidthLabelID'>-15</label>
-				</div>
+				<label>BestClass Smoother :</label>
+				<input type="range" id="smoothedBestClassWidthRangeID" min="1" max="100" value='50' step='10' title='Smoothing the bestClass over X values' />
+				<label id='smoothedBestClassWidthLabelID'>-15</label>
+			</div>
 			<div>
 				<!-- element to contained the featureVectorHeatmapsID -->
 				<h3>Camera Calibration</h3>
@@ -109,6 +110,14 @@
 
 
 
+	</div>
+	<!-- add twitter badge -->
+	<div style='position: fixed; bottom: 1em; right: 1em;'>
+		Made with ❤️ by <a href='https://twitter.com/jerome_etienne' target="_blank" rel="noopener">@jerome_etienne</a>
+	</div>
+	<!-- add github badge -->
+	<div style='position: fixed; bottom: 1em; left: 1em;'>
+		Code Available on <a href='https://github.com/slouching-or-not/slouching-or-not-posenet' target="_blank" rel="noopener">github</a>
 	</div>
 </body>
 
