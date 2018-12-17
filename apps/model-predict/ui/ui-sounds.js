@@ -4,23 +4,31 @@ import ModelConstants from '../../../src/model-constants.js'
 //	define timelines for isSlouching, and notSlouching
 ////////////////////////////////////////////////////////////////////////
 
+// let soundURLs = {
+// 	isSlouching : 'ui/sounds/freesounds/351167__reitanna__that-s-bad.wav',
+// 	notSlouching : 'ui/sounds/freesounds/277021__sandermotions__applause-2.wav',
+// }
+let soundURLs = {
+	isSlouching : 'ui/sounds/zedge/gentle_alarm.mp3',
+	notSlouching : 'ui/sounds/zedge/gentle_roll.mp3',
+}
 let isSlouchingTimelineSteps = [
 	{
 		delay: 0,
 		callback: function () {
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav')
+			soundPlay(soundURLs.isSlouching)
 		}
 	},
 	{
 		delay: 10000,
 		callback: function () {
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav')
+			soundPlay(soundURLs.isSlouching)
 		}
 	},
 	{
 		delay: 20000,
 		callback: function () {
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav')
+			soundPlay(soundURLs.isSlouching)
 		}
 	},
 ]
@@ -28,7 +36,7 @@ let notSlouchingTimelineSteps = [
 	{
 		delay: 0,
 		callback: function () {
-			soundPlay('ui/sounds/277021__sandermotions__applause-2.wav')
+			soundPlay(soundURLs.notSlouching)
 		}
 	},
 ]
