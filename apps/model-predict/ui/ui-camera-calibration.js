@@ -135,18 +135,19 @@ let cst = ModelConstants
 			featureVectors.push(featureVector)
 		}
 		// draw heat map
-		// DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
+		DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
 
-		let simpleHeatmap = simpleheat(canvasEl)
-		simpleHeatmap.radius(1, 5);
-		simpleHeatmap.max(Math.log(featureVectors.length) / 3)
-		for (let vectorIndex = 0; vectorIndex < featureVectors.length; vectorIndex++) {
-			for (let featureIndex = 0; featureIndex < featureVectors[0].length; featureIndex++) {
-				var feature = featureVectors[vectorIndex][featureIndex]
-				simpleHeatmap.add([feature[0] * canvasEl.width, feature[1] * canvasEl.height, 1])
-			}
-		}
-		simpleHeatmap.draw();
+		// draw heatmap with simpleheat.js - https://github.com/mourner/simpleheat
+		// let simpleHeatmap = simpleheat(canvasEl)
+		// simpleHeatmap.radius(1, 5);
+		// simpleHeatmap.max(Math.log(featureVectors.length) / 3)
+		// for (let vectorIndex = 0; vectorIndex < featureVectors.length; vectorIndex++) {
+		// 	for (let featureIndex = 0; featureIndex < featureVectors[0].length; featureIndex++) {
+		// 		var feature = featureVectors[vectorIndex][featureIndex]
+		// 		simpleHeatmap.add([feature[0] * canvasEl.width, feature[1] * canvasEl.height, 1])
+		// 	}
+		// }
+		// simpleHeatmap.draw();
 	}
 
 

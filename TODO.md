@@ -1,16 +1,16 @@
-- do a better notification system
+- DONE do a better notification system
   - so a timeline for examples
   - when entering in isSlouching
     - what to do just now
     - what to do in a min, in 10 min
   - do a array with a delay between actions, and a function to do the actions
-- move all predict into its own folder
+- DONE move all predict into its own folder
   - model-predict/index.html
   - model-predict/ui/ui-helper.js
   - model-predict/ui/ui-sound.js
   - model-predict/ui/ui-status.js
   - model-predict/ui/ui-camera-calibration.js
-- TODO do a UI for detection smoother event
+- DONE do a UI for detection smoother event
 - ignore the dom problem for now
   - just push the javascript
   - the js is the important part

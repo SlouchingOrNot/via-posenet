@@ -77,7 +77,7 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	if (slouchingOrNotEvent.smoothedBestClass === lastBestClass) return
 
 	// log to debug
-	console.log(`sending a smoothedBestClassChange. from ${lastBestClass} to ${slouchingOrNotEvent.smoothedBestClass}`)
+	// console.log(`sending a smoothedBestClassChange. from ${lastBestClass} to ${slouchingOrNotEvent.smoothedBestClass}`)
 
 	// update lastBestClass
 	lastBestClass = slouchingOrNotEvent.smoothedBestClass

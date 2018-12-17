@@ -3,6 +3,7 @@
 	body {
 		text-align: center;
 		background-color: #ccc;
+		overflow: scroll;
 	}
 </style>
 
@@ -50,7 +51,7 @@
 			<input type="checkbox" id="optionsToggleID" checked></input>
 		</label>
 	</div>
-	<div id='optionsID' style='display: inherit'>
+	<div id='optionsID' style='width: 50%; display: block; text-align: left; margin: auto;'>
 		<hr />
 		<div>
 			<label>Display posenet result
@@ -74,18 +75,18 @@
 				<h3>Camera Calibration</h3>
 				<div>
 					<label>PosenetResult offset Y :</label>
-					<input type="range" id="posenetOffsetYRangeID" min="-224" max="224" value='0' title='PosenetResult offset Y' />
+					<input type="range" id="posenetOffsetYRangeID" min="-56" max="56" value='0' title='PosenetResult offset Y' />
 					<label id='posenetOffsetYLabelID'>-15</label>
 				</div>
 				<br />
 				<h3>Dataset Heatmap</h3>
 				<!-- UI to select the dataset-info url -->
-				<label>Dataset:
+				<label><b>Dataset:</b>
 					<span id='datasetNameID'></label>
 				</label>
 				<br />
 				<!-- UI to select the augmentation policy -->
-				<label>Augmentation Policy:
+				<label><b>Augmentation Policy:</b>
 					<span id='augmentationPolicyID'></label>
 				</label>
 				<br />
@@ -97,10 +98,6 @@
 					<span>notSlouching</span>
 					<span class='featureVectorHeatmap-notSlouching' style='position: relative'></span>
 				</div>
-
-				<br />
-				<!-- display datasetRaw summaries -->
-				<div id='datasetRawSumaries'></div>
 			</div>
 		</div>
 

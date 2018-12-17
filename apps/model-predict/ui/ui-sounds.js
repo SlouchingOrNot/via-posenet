@@ -7,27 +7,27 @@ import ModelConstants from '../../../src/model-constants.js'
 let isSlouchingTimelineSteps = [
 	{
 		delay: 0,
-		callback: function(){
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)			
+		callback: function () {
+			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
 		}
 	},
 	{
 		delay: 10000,
-		callback: function(){
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)			
+		callback: function () {
+			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
 		}
 	},
 	{
 		delay: 20000,
-		callback: function(){
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)			
+		callback: function () {
+			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
 		}
 	},
 ]
 let notSlouchingTimelineSteps = [
 	{
 		delay: 0,
-		callback: function(){
+		callback: function () {
 			soundPlay('ui/sounds/277021__sandermotions__applause-2.wav', 0.1)
 		}
 	},
@@ -43,7 +43,8 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	// keep only 'smoothedBestClassChange' event
 	if (slouchingOrNotEvent.type !== 'smoothedBestClassChange') return
 
-	console.log( `smoothedBestClassChange smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
+	// log to debug
+	// console.log(`smoothedBestClassChange smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
 
 	if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
 		soundMute()
@@ -69,11 +70,11 @@ let timelineTimerID = null
  * 
  * @param {Array[{delay: Number, callback: Function}]} timeline the timeline to execute
  */
-function timelineStart(newTimelineSteps){
+function timelineStart(newTimelineSteps) {
 	// if there is a newTimelineSteps in progress, stop it now
-	if( timelineSteps !== null )	timelineStop()
+	if (timelineSteps !== null) timelineStop()
 
-console.log('timelineStart', newTimelineSteps)
+	// console.log('timelineStart', newTimelineSteps)
 
 	// reset timelineSteps with the new value
 	timelineSteps = newTimelineSteps
@@ -84,17 +85,17 @@ console.log('timelineStart', newTimelineSteps)
 
 }
 
-function timelineRunNextStep(){
-	if( timelineStepIndex >= timelineSteps.length ){
-		console.log('timeline ended')
+function timelineRunNextStep() {
+	if (timelineStepIndex >= timelineSteps.length) {
+		// console.log('timeline ended')
 		timelineStop()
 		return
 	}
 
 	let timelineStep = timelineSteps[timelineStepIndex]
-	console.log(`timelineRunNextStep: wait for ${timelineStep.delay}-ms to call ${timelineStepIndex}th steps`)
-	timelineTimerID = setTimeout(function(){
-		console.log(`timelineRunNextStep: call ${timelineStepIndex}th steps`)
+	// console.log(`timelineRunNextStep: wait for ${timelineStep.delay}-ms to call ${timelineStepIndex}th steps`)
+	timelineTimerID = setTimeout(function () {
+		// console.log(`timelineRunNextStep: call ${timelineStepIndex}th steps`)
 		timelineStep.callback()
 
 		timelineStepIndex++
@@ -103,12 +104,12 @@ function timelineRunNextStep(){
 	}, timelineStep.delay)
 }
 
-function timelineStop(){
+function timelineStop() {
 	// log to debug
-	console.log(`timelineStop:`)
-	
+	// console.log(`timelineStop:`)
+
 	// clearTimeout if needed
-	if( timelineTimerID !== null )	clearTimeout( timelineTimerID )
+	if (timelineTimerID !== null) clearTimeout(timelineTimerID)
 	timelineTimerID = null
 	timelineSteps = null
 	timelineStepIndex = 0
@@ -156,13 +157,13 @@ function soundPlay(soundURL, volume) {
 	notificationAudioEl = audioEl
 }
 
-function soundMute(shouldBeMuted){
+function soundMute(shouldBeMuted) {
 	// handle default arguments
-	if( shouldBeMuted === undefined )	shouldBeMuted = true
+	if (shouldBeMuted === undefined) shouldBeMuted = true
 	// if no sound is in progress, return now
 	if (notificationAudioEl === null) return
 	// set the muted attribute
-	notificationAudioEl.muted = shouldBeMuted	
+	notificationAudioEl.muted = shouldBeMuted
 }
 
 ////////////////////////////////////////////////////////////////////////
