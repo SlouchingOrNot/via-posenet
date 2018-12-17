@@ -47,11 +47,11 @@
 
 	<div>
 		<label>Options
-			<input type="checkbox" id="optionsToggleID"></input>
+			<input type="checkbox" id="optionsToggleID" checked></input>
 		</label>
 	</div>
-	<div id='optionsID' style='display:none'>
-		<hr/>
+	<div id='optionsID' style='display: inherit'>
+		<hr />
 		<div>
 			<label>Display posenet result
 				<input type="checkbox" id="posenetResultEnableID" checked></input>
@@ -59,41 +59,45 @@
 		</div>
 		<br />
 		<div id='predictUIPluginsContainerID'>
-			<!-- predict-ui dom elements go here -->
+			<div>
+				<label>Sound Mute
+					<input type="checkbox" id="muteID" title='To mute the sound or not.' checked />
+				</label>
+				<!-- element to contained the featureVectorHeatmapsID -->
+				<h3>Camera Calibration</h3>
+				<div>
+					<label>PosenetResult offset Y :</label>
+					<input type="range" id="posenetOffsetYRangeID" min="-224" max="224" value='0' title='PosenetResult offset Y' />
+					<label id='posenetOffsetYLabelID'>-15</label>
+				</div>
+				<br />
+				<h3>Dataset Heatmap</h3>
+				<!-- UI to select the dataset-info url -->
+				<label>Dataset:
+					<span id='datasetNameID'></label>
+				</label>
+				<br />
+				<!-- UI to select the augmentation policy -->
+				<label>Augmentation Policy:
+					<span id='augmentationPolicyID'></label>
+				</label>
+				<br />
+				<br />
+				<br />
+				<div id='featureVectorHeatmapsID'>
+					<span>isSlouching</span>
+					<span class='featureVectorHeatmap-isSlouching' style='position: relative'></span>
+					<span>notSlouching</span>
+					<span class='featureVectorHeatmap-notSlouching' style='position: relative'></span>
+				</div>
+
+				<br />
+				<!-- display datasetRaw summaries -->
+				<div id='datasetRawSumaries'></div>
+			</div>
 		</div>
 
 
-		<!-- element to contained the featureVectorHeatmapsID -->
-		<h3>Camera Calibration</h3>
-		<div>
-			<label>PosenetResult offset Y :</label>
-			<input type="range" id="posenetOffsetYRangeID" min="-56" max="+56" value='-15' title='PosenetResult offset Y' />
-			<label id='posenetOffsetYLabelID'>-15</label>
-		</div>
-		<br />
-		<h3>Dataset Heatmap</h3>
-		<!-- UI to select the dataset-info url -->
-		<label>Dataset:
-			<span id='datasetNameID'></label>
-		</label>
-		<br/>
-		<!-- UI to select the augmentation policy -->
-		<label>Augmentation Policy:
-			<span id='augmentationPolicyID'></label>
-		</label>
-		<br />
-		<br />
-		<br />
-		<div id='featureVectorHeatmapsID'>
-			<span>isSlouching</span>
-			<span class='featureVectorHeatmap-isSlouching' style='position: relative'></span>
-			<span>notSlouching</span>
-			<span class='featureVectorHeatmap-notSlouching' style='position: relative'></span>
-		</div>
-
-		<br />
-		<!-- display datasetRaw summaries -->
-		<div id='datasetRawSumaries'></div>
 
 	</div>
 </body>
@@ -125,6 +129,10 @@
 		let cst = ModelConstants
 		var urlParams = new URLSearchParams(window.location.hash.substr(1))
 
+		// window.appParameters = {
+		// 	cameraCalibrationOffsetY: 15
+		// }
+
 		////////////////////////////////////////////////////////////////////////
 		//		Handle optionsID UI
 		////////////////////////////////////////////////////////////////////////
@@ -133,130 +141,130 @@
 			document.querySelector('#optionsID').style.display = checked ? 'block' : 'none'
 		})
 
-		////////////////////////////////////////////////////////////////////////
-		//		Handle #posenetOffsetYLabelID
-		////////////////////////////////////////////////////////////////////////
-		if( localStorage.getItem('slouchingOrNot-predict-posenetOffsetY') !== null ){
-			let value = parseFloat(localStorage.getItem('slouchingOrNot-predict-posenetOffsetY'))
-			document.querySelector('#posenetOffsetYRangeID').value = value
-			document.querySelector('#posenetOffsetYLabelID').innerHTML = value
-		}
+		// ////////////////////////////////////////////////////////////////////////
+		// //		Handle #posenetOffsetYLabelID
+		// ////////////////////////////////////////////////////////////////////////
+		// if (localStorage.getItem('slouchingOrNot-predict-posenetOffsetY') !== null) {
+		// 	let value = parseFloat(localStorage.getItem('slouchingOrNot-predict-posenetOffsetY'))
+		// 	document.querySelector('#posenetOffsetYRangeID').value = value
+		// 	document.querySelector('#posenetOffsetYLabelID').innerHTML = value
+		// }
 
-		document.querySelector('#posenetOffsetYRangeID').addEventListener("input", function () {
-			var value = document.querySelector('#posenetOffsetYRangeID').value
-			// update UI
-			document.querySelector('#posenetOffsetYLabelID').innerHTML = value
-			// store new value in localStorage
-			localStorage.setItem('slouchingOrNot-predict-posenetOffsetY', value);
-		}, false);
+		// document.querySelector('#posenetOffsetYRangeID').addEventListener("input", function () {
+		// 	var value = document.querySelector('#posenetOffsetYRangeID').value
+		// 	// update UI
+		// 	document.querySelector('#posenetOffsetYLabelID').innerHTML = value
+		// 	// store new value in localStorage
+		// 	localStorage.setItem('slouchingOrNot-predict-posenetOffsetY', value);
+		// }, false);
 
-		//////////////////////////////////////////////////////////////////////////////
-		//		load dataset-info
-		//////////////////////////////////////////////////////////////////////////////
-		var datasetName = 'low-isSlouching__middle-notSlouching'
-		if( localStorage.getItem('slouchingOrNot-predict-datasetName') !== null ){
-			datasetName = localStorage.getItem('slouchingOrNot-predict-datasetName')
-		}		
-		// set #datasetNameID value
-		document.querySelector('#datasetNameID').innerHTML = datasetName
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		load dataset-info
+		// //////////////////////////////////////////////////////////////////////////////
+		// var datasetName = 'low-isSlouching__middle-notSlouching'
+		// if (localStorage.getItem('slouchingOrNot-predict-datasetName') !== null) {
+		// 	datasetName = localStorage.getItem('slouchingOrNot-predict-datasetName')
+		// }
+		// // set #datasetNameID value
+		// document.querySelector('#datasetNameID').innerHTML = datasetName
 
-		// load datasetInfo
-		var datasetInfoURL = `../../datasets/${datasetName}/dataset-info.json`
-		var datasetInfo = await DatasetInfo.load(datasetInfoURL)
+		// // load datasetInfo
+		// var datasetInfoURL = `../../datasets/${datasetName}/dataset-info.json`
+		// var datasetInfo = await DatasetInfo.load(datasetInfoURL)
 
-		//////////////////////////////////////////////////////////////////////////////
-		//		load DatasetRaw
-		//////////////////////////////////////////////////////////////////////////////
-		console.time('loadingData')
-		let datasetRaw = new DatasetRaw(cst.NUM_CLASSES)
-		for (let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++) {
-			await datasetRaw.loadClass(classIndex, datasetInfo.posenetResultURLs[classIndex], datasetInfo.imageURLs[classIndex])
-		}
-		console.timeEnd('loadingData')
-		datasetRaw.print('raw data')
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		load DatasetRaw
+		// //////////////////////////////////////////////////////////////////////////////
+		// console.time('loadingData')
+		// let datasetRaw = new DatasetRaw(cst.NUM_CLASSES)
+		// for (let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++) {
+		// 	await datasetRaw.loadClass(classIndex, datasetInfo.posenetResultURLs[classIndex], datasetInfo.imageURLs[classIndex])
+		// }
+		// console.timeEnd('loadingData')
+		// datasetRaw.print('raw data')
 
-		//////////////////////////////////////////////////////////////////////////////
-		//		remove not isGoodEnough samples from datasetRaw
-		//////////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		remove not isGoodEnough samples from datasetRaw
+		// //////////////////////////////////////////////////////////////////////////////
 
-		datasetRaw = DatasetProcessing.removeNotGoodEnoughSamples(datasetRaw)
+		// datasetRaw = DatasetProcessing.removeNotGoodEnoughSamples(datasetRaw)
 
-		//////////////////////////////////////////////////////////////////////////////
-		//		balance datasetRaw
-		//////////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		balance datasetRaw
+		// //////////////////////////////////////////////////////////////////////////////
 
-		DatasetProcessing.balanceDatasetRaw(datasetRaw)
+		// DatasetProcessing.balanceDatasetRaw(datasetRaw)
 
-		//////////////////////////////////////////////////////////////////////////////
-		//		Augment datasetRaw
-		//////////////////////////////////////////////////////////////////////////////
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		Augment datasetRaw
+		// //////////////////////////////////////////////////////////////////////////////
 
-		// get current augmentationPolicy
-		var augmentationPolicy = 'massiveAugmentation2'
-		if( localStorage.getItem('slouchingOrNot-predict-augmentationPolicy') !== null ){
-			augmentationPolicy = localStorage.getItem('slouchingOrNot-predict-augmentationPolicy')
-		}		
+		// // get current augmentationPolicy
+		// var augmentationPolicy = 'massiveAugmentation2'
+		// if (localStorage.getItem('slouchingOrNot-predict-augmentationPolicy') !== null) {
+		// 	augmentationPolicy = localStorage.getItem('slouchingOrNot-predict-augmentationPolicy')
+		// }
 
-		// set #augmentationPolicyID value
-		document.querySelector('#augmentationPolicyID').innerHTML = augmentationPolicy
-
-
-		// augment datasetRaw
-		datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
-		datasetRaw.print('after augmentation data')
-
-		//////////////////////////////////////////////////////////////////////////////
-		//		remove any tilt in datasetRaw posenetResult keypoints
-		//////////////////////////////////////////////////////////////////////////////
-
-		datasetRaw = DatasetProcessing.removeTiltDatasetRaw(datasetRaw)
-
-		//////////////////////////////////////////////////////////////////////////////
-		//		create featureVector heatmap
-		//////////////////////////////////////////////////////////////////////////////
-
-		for (let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++) {
-			// build canvasEl
-			let canvasEl = document.createElement('canvas')
-			canvasEl.width = canvasEl.height = 256
-			canvasEl.style.border = 'gray solid 1px'
-			document.querySelector(`#featureVectorHeatmapsID .featureVectorHeatmap-${ModelConstants.CLASS_NAMES[classIndex]}`).appendChild(canvasEl)
-			// build featureVectors
-			let featureVectors = []
-			for (let sampleIndex = 0; sampleIndex < datasetRaw.posenetResults[classIndex].length; sampleIndex++) {
-				let posenetResult = datasetRaw.posenetResults[classIndex][sampleIndex]
-				// if (DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult) === false) continue
-
-				var featureVector = DatasetFeature.createFeatureVector(posenetResult)
-				featureVectors.push(featureVector)
-			}
-			// draw heat map
-			// DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
-
-			let simpleHeatmap = simpleheat(canvasEl)
-			simpleHeatmap.radius(1, 5);
-			simpleHeatmap.max(Math.log(featureVectors.length) / 3)
-			for (let vectorIndex = 0; vectorIndex < featureVectors.length; vectorIndex++) {
-				for (let featureIndex = 0; featureIndex < featureVectors[0].length; featureIndex++) {
-					var feature = featureVectors[vectorIndex][featureIndex]
-					simpleHeatmap.add([feature[0] * canvasEl.width, feature[1] * canvasEl.height, 1])
-				}
-			}
-			simpleHeatmap.draw();
-		}
+		// // set #augmentationPolicyID value
+		// document.querySelector('#augmentationPolicyID').innerHTML = augmentationPolicy
 
 
-		// build canvas for current feature vector feedback
-		let isSlouchingFeatureHeatmapEl = document.createElement('canvas')
-		isSlouchingFeatureHeatmapEl.width = isSlouchingFeatureHeatmapEl.height = 256
-		isSlouchingFeatureHeatmapEl.style.position = 'absolute'
-		isSlouchingFeatureHeatmapEl.style.left = '0px'
-		document.querySelector('#featureVectorHeatmapsID .featureVectorHeatmap-isSlouching').appendChild(isSlouchingFeatureHeatmapEl)
-		let notSlouchingFeatureHeatmapEl = document.createElement('canvas')
-		notSlouchingFeatureHeatmapEl.width = notSlouchingFeatureHeatmapEl.height = 256
-		notSlouchingFeatureHeatmapEl.style.position = 'absolute'
-		notSlouchingFeatureHeatmapEl.style.left = '0px'
-		document.querySelector('#featureVectorHeatmapsID .featureVectorHeatmap-notSlouching').appendChild(notSlouchingFeatureHeatmapEl)
+		// // augment datasetRaw
+		// datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
+		// datasetRaw.print('after augmentation data')
+
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		remove any tilt in datasetRaw posenetResult keypoints
+		// //////////////////////////////////////////////////////////////////////////////
+
+		// datasetRaw = DatasetProcessing.removeTiltDatasetRaw(datasetRaw)
+
+		// //////////////////////////////////////////////////////////////////////////////
+		// //		create featureVector heatmap
+		// //////////////////////////////////////////////////////////////////////////////
+
+		// for (let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++) {
+		// 	// build canvasEl
+		// 	let canvasEl = document.createElement('canvas')
+		// 	canvasEl.width = canvasEl.height = 256
+		// 	canvasEl.style.border = 'gray solid 1px'
+		// 	document.querySelector(`#featureVectorHeatmapsID .featureVectorHeatmap-${ModelConstants.CLASS_NAMES[classIndex]}`).appendChild(canvasEl)
+		// 	// build featureVectors
+		// 	let featureVectors = []
+		// 	for (let sampleIndex = 0; sampleIndex < datasetRaw.posenetResults[classIndex].length; sampleIndex++) {
+		// 		let posenetResult = datasetRaw.posenetResults[classIndex][sampleIndex]
+		// 		// if (DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult) === false) continue
+
+		// 		var featureVector = DatasetFeature.createFeatureVector(posenetResult)
+		// 		featureVectors.push(featureVector)
+		// 	}
+		// 	// draw heat map
+		// 	// DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
+
+		// 	let simpleHeatmap = simpleheat(canvasEl)
+		// 	simpleHeatmap.radius(1, 5);
+		// 	simpleHeatmap.max(Math.log(featureVectors.length) / 3)
+		// 	for (let vectorIndex = 0; vectorIndex < featureVectors.length; vectorIndex++) {
+		// 		for (let featureIndex = 0; featureIndex < featureVectors[0].length; featureIndex++) {
+		// 			var feature = featureVectors[vectorIndex][featureIndex]
+		// 			simpleHeatmap.add([feature[0] * canvasEl.width, feature[1] * canvasEl.height, 1])
+		// 		}
+		// 	}
+		// 	simpleHeatmap.draw();
+		// }
+
+
+		// // build canvas for current feature vector feedback
+		// let isSlouchingFeatureHeatmapEl = document.createElement('canvas')
+		// isSlouchingFeatureHeatmapEl.width = isSlouchingFeatureHeatmapEl.height = 256
+		// isSlouchingFeatureHeatmapEl.style.position = 'absolute'
+		// isSlouchingFeatureHeatmapEl.style.left = '0px'
+		// document.querySelector('#featureVectorHeatmapsID .featureVectorHeatmap-isSlouching').appendChild(isSlouchingFeatureHeatmapEl)
+		// let notSlouchingFeatureHeatmapEl = document.createElement('canvas')
+		// notSlouchingFeatureHeatmapEl.width = notSlouchingFeatureHeatmapEl.height = 256
+		// notSlouchingFeatureHeatmapEl.style.position = 'absolute'
+		// notSlouchingFeatureHeatmapEl.style.left = '0px'
+		// document.querySelector('#featureVectorHeatmapsID .featureVectorHeatmap-notSlouching').appendChild(notSlouchingFeatureHeatmapEl)
 
 		//////////////////////////////////////////////////////////////////////////////
 		//		load dataset-info
@@ -324,6 +332,8 @@
 
 			// apply posenetOffsetY
 			var posenetOffsetY = parseFloat(document.querySelector('#posenetOffsetYRangeID').value)
+			// var posenetOffsetY = window.appParameters.cameraCalibrationOffsetY
+			// console.log('posenetOffsetY', posenetOffsetY)
 			DatasetProcessing.translateFixKeypointPositions(posenetResult, 0, posenetOffsetY)
 
 			//////////////////////////////////////////////////////////////////////////////
@@ -341,7 +351,7 @@
 			////////////////////////////////////////////////////////////////////////
 			//		do prediction
 			////////////////////////////////////////////////////////////////////////
-			
+
 			if (isGoodEnough === true) {
 				// predict the class based on this featureVector
 				const inputTensor = tf.tensor3d([featureVector]);
@@ -367,16 +377,18 @@
 				}
 			}
 
-			////////////////////////////////////////////////////////////////////////
-			//		Update UI
-			////////////////////////////////////////////////////////////////////////
+			// ////////////////////////////////////////////////////////////////////////
+			// //		Update UI
+			// ////////////////////////////////////////////////////////////////////////
 
-			// update isSlouchingFeatureHeatmapEl
-			for (let canvasEl of [isSlouchingFeatureHeatmapEl, notSlouchingFeatureHeatmapEl]) {
-				let context = canvasEl.getContext('2d')
-				context.clearRect(0, 0, canvasEl.width, canvasEl.height);
-				DatasetFeature.drawOneFeatureVector(context, featureVector)
-			}
+			// // update isSlouchingFeatureHeatmapEl
+			// for (let canvasEl of [isSlouchingFeatureHeatmapEl, notSlouchingFeatureHeatmapEl]) {
+			// 	let context = canvasEl.getContext('2d')
+			// 	context.clearRect(0, 0, canvasEl.width, canvasEl.height);
+			// 	DatasetFeature.drawOneFeatureVector(context, featureVector)
+			// }
+
+			// debugger
 
 			//////////////////////////////////////////////////////////////////////////////
 			//		Notify CustomEvent for slouchingOrNotEvent
@@ -390,6 +402,7 @@
 					rawConfidence: predictionsData[rawBestClass],
 					isGoodEnough: isGoodEnough,
 					isSeeingSomeone: isSeeingSomeone,
+					featureVector: featureVector,
 				}
 			}))
 
@@ -407,6 +420,7 @@
 </script>
 
 <!-- load the ui modules -->
+<script type='module' src="ui/ui-camera-calibration.js"></script>
 <script type='module' src="ui/ui-status.js"></script>
-<script type='module' src="ui/ui-helpers.js"></script>
+<script type='module' src="ui/ui-event-helpers.js"></script>
 <script type='module' src="ui/ui-sounds.js"></script>

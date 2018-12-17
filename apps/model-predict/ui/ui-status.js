@@ -4,13 +4,14 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	let slouchingOrNotEvent = domEvent.detail
 
 	// keep only 'rawPrediction' event
-	if (slouchingOrNotEvent.type !== 'rawPrediction') return
+	if (slouchingOrNotEvent.type !== 'smoothedPrediction') return
 
 	// get data from slouchingOrNotEvent
 	let isGoodEnough = slouchingOrNotEvent.isGoodEnough
 	let isSeeingSomeone = slouchingOrNotEvent.isSeeingSomeone
 	let rawBestClass = slouchingOrNotEvent.rawBestClass
 	let rawConfidence = slouchingOrNotEvent.rawConfidence
+	let smoothedBestClass = slouchingOrNotEvent.smoothedBestClass
 
 	// honor isGoodEnough UI
 	if (isGoodEnough === true) {
@@ -27,8 +28,8 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	}
 
 	// display result
-	document.querySelector('#bestClassNameID').innerHTML = ModelConstants.CLASS_NAMES[rawBestClass]
-	if (rawBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
+	document.querySelector('#bestClassNameID').innerHTML = ModelConstants.CLASS_NAMES[smoothedBestClass]
+	if (smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
 		document.querySelector('#bestClassNameID').style.color = 'red'
 	} else {
 		document.querySelector('#bestClassNameID').style.color = ''

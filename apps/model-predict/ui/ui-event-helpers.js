@@ -4,7 +4,8 @@
 ////////////////////////////////////////////////////////////////////////
 
 let bestClassesHistory = []
-let historyMaxLength = 1
+let historyMaxLength = 50
+// let historyMaxLength = 1
 window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	let slouchingOrNotEvent = domEvent.detail
 

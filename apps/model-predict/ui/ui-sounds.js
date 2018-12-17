@@ -1,22 +1,6 @@
 import ModelConstants from '../../../src/model-constants.js'
 
 ////////////////////////////////////////////////////////////////////////
-//		build dom elements
-////////////////////////////////////////////////////////////////////////
-
-document.querySelector('#predictUIPluginsContainerID').appendChild(createElementFromHTML(
-`<div>
-	<label>Sound Mute
-		<input type="checkbox" id="muteID" title='To mute the sound or not.' checked/>
-	</label>
-</div>`))
-
-function createElementFromHTML(htmlContent) {
-	var domElement = document.createElement('div');
-	domElement.innerHTML = htmlContent.trim();
-	return domElement.firstChild;
-}
-////////////////////////////////////////////////////////////////////////
 //		Play Sounds
 ////////////////////////////////////////////////////////////////////////
 
@@ -25,13 +9,13 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	// keep only 'smoothedPrediction' event
 	if (slouchingOrNotEvent.type !== 'smoothedBestClassChange') return
 
-
+// debugger
 	if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
 		// playSound('predict-skins/sounds/265012__sethlind__toaster-oven-ding.wav', 0.05)
 		// playSound('predict-skins/sounds/341601__mike-stranks__gentle-stream.wav', 0.3)
-		playSound('predict-ui-plugins/sounds/351167__reitanna__that-s-bad.wav', 0.3)
+		playSound('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
 	} else if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.notSlouching) {
-		playSound('predict-ui-plugins/sounds/277021__sandermotions__applause-2.wav', 0.1)
+		playSound('ui/sounds/277021__sandermotions__applause-2.wav', 0.1)
 	} else {
 		console.assert(false, `unknown smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
 	}
