@@ -9,7 +9,7 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	// get data from slouchingOrNotEvent
 	let isGoodEnough = slouchingOrNotEvent.isGoodEnough
 	let isSeeingSomeone = slouchingOrNotEvent.isSeeingSomeone
-	let rawBestClass = slouchingOrNotEvent.rawBestClass
+	// let rawBestClass = slouchingOrNotEvent.rawBestClass
 	let rawConfidence = slouchingOrNotEvent.rawConfidence
 	let smoothedBestClass = slouchingOrNotEvent.smoothedBestClass
 

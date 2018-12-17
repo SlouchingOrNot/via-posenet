@@ -1,3 +1,9 @@
+- do a better notification system
+  - so a timeline for examples
+  - when entering in isSlouching
+    - what to do just now
+    - what to do in a min, in 10 min
+  - do a array with a delay between actions, and a function to do the actions
 - move all predict into its own folder
   - model-predict/index.html
   - model-predict/ui/ui-helper.js

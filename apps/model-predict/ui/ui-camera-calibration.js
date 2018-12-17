@@ -17,9 +17,6 @@ let cst = ModelConstants
 	window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 		let slouchingOrNotEvent = domEvent.detail
 
-// return
-		// console.log('slouchingOrNotEvent.type', slouchingOrNotEvent.type)
-
 		// keep only 'rawPrediction' event
 		if (slouchingOrNotEvent.type !== 'rawPrediction') return
 
@@ -46,17 +43,11 @@ let cst = ModelConstants
 		let value = parseFloat(localStorage.getItem('slouchingOrNot-predict-posenetOffsetY'))
 		document.querySelector('#posenetOffsetYRangeID').value = value
 		document.querySelector('#posenetOffsetYLabelID').innerHTML = value
-		// update window.appParameters
-// 		window.appParameters.cameraCalibrationOffsetY = value
-// console.log(window.appParameters.cameraCalibrationOffsetY)
 	}
 
 	// update #posenetOffsetYLabelID when #posenetOffsetYRangeID change, and update localStorage
 	document.querySelector('#posenetOffsetYRangeID').addEventListener("input", function () {
 		var value = document.querySelector('#posenetOffsetYRangeID').value
-		// // update window.appParameters
-		// window.appParameters.cameraCalibrationOffsetY = value
-		// console.log(window.appParameters.cameraCalibrationOffsetY)
 		// update UI
 		document.querySelector('#posenetOffsetYLabelID').innerHTML = value
 		// store new value in localStorage

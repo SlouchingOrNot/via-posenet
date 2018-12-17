@@ -1,4 +1,5 @@
 
+
 ////////////////////////////////////////////////////////////////////////
 //		Handle 'smoothedPrediction' event
 ////////////////////////////////////////////////////////////////////////
@@ -26,6 +27,9 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	smoothedBestClass /= bestClassesHistory.length
 	smoothedBestClass = Math.round(smoothedBestClass)
 
+	// do a shallow copy of slouchingOrNotEvent
+	slouchingOrNotEvent = Object.assign({}, slouchingOrNotEvent);
+
 	// update slouchingOrNotEvent
 	slouchingOrNotEvent.type = 'smoothedPrediction'
 	slouchingOrNotEvent.smoothedBestClass = smoothedBestClass
@@ -35,6 +39,29 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 		detail: slouchingOrNotEvent
 	}))
 })
+
+////////////////////////////////////////////////////////////////////////
+//		Handle #smoothedBestClassWidthLabelID
+////////////////////////////////////////////////////////////////////////
+// get initial #smoothedBestClassWidthRangeID value from localStorage if available
+if (localStorage.getItem('slouchingOrNot-predict-smoothedBestClassWidth') !== null) {
+	let value = parseFloat(localStorage.getItem('slouchingOrNot-predict-smoothedBestClassWidth'))
+	document.querySelector('#smoothedBestClassWidthRangeID').value = value
+	document.querySelector('#smoothedBestClassWidthLabelID').innerHTML = value
+	// update historyMaxLength
+	historyMaxLength = value
+}
+
+// update #smoothedBestClassWidthLabelID when #smoothedBestClassWidthRangeID change, and update localStorage
+document.querySelector('#smoothedBestClassWidthRangeID').addEventListener("input", function () {
+	var value = parseFloat(document.querySelector('#smoothedBestClassWidthRangeID').value)
+	// update UI
+	document.querySelector('#smoothedBestClassWidthLabelID').innerHTML = value
+	// store new value in localStorage
+	localStorage.setItem('slouchingOrNot-predict-smoothedBestClassWidth', value);
+	// update historyMaxLength
+	historyMaxLength = value
+}, false);
 
 ////////////////////////////////////////////////////////////////////////
 //		handle smoothedBestClassChange event
@@ -49,8 +76,14 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	// if smoothedBestClass is still the same, do nothing
 	if (slouchingOrNotEvent.smoothedBestClass === lastBestClass) return
 
+	// log to debug
+	console.log(`sending a smoothedBestClassChange. from ${lastBestClass} to ${slouchingOrNotEvent.smoothedBestClass}`)
+
 	// update lastBestClass
 	lastBestClass = slouchingOrNotEvent.smoothedBestClass
+
+	// do a shallow copy of slouchingOrNotEvent
+	slouchingOrNotEvent = Object.assign({}, slouchingOrNotEvent);
 
 	// update slouchingOrNotEvent
 	slouchingOrNotEvent.type = 'smoothedBestClassChange'

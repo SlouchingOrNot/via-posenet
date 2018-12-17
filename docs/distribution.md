@@ -29,6 +29,8 @@ The standalone device could be a cheap specific hardware. slouchingOrNot require
 Something like arduino-style would have enough power to do it.
 Obviously the package will be a nice clean box.
 
+- https://www.facebook.com/Uprightpose/ - 
+
 ## Phone
 Mobile phone could run slouchingOrNot.
 Phone are already very popular, so people could use slouchingOrNot without paying for new hardware
