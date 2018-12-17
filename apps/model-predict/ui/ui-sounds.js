@@ -8,19 +8,19 @@ let isSlouchingTimelineSteps = [
 	{
 		delay: 0,
 		callback: function () {
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
+			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav')
 		}
 	},
 	{
 		delay: 10000,
 		callback: function () {
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
+			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav')
 		}
 	},
 	{
 		delay: 20000,
 		callback: function () {
-			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav', 0.3)
+			soundPlay('ui/sounds/351167__reitanna__that-s-bad.wav')
 		}
 	},
 ]
@@ -28,7 +28,7 @@ let notSlouchingTimelineSteps = [
 	{
 		delay: 0,
 		callback: function () {
-			soundPlay('ui/sounds/277021__sandermotions__applause-2.wav', 0.1)
+			soundPlay('ui/sounds/277021__sandermotions__applause-2.wav')
 		}
 	},
 ]
@@ -47,10 +47,8 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	// console.log(`smoothedBestClassChange smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
 
 	if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
-		soundMute()
 		timelineStart(isSlouchingTimelineSteps)
 	} else if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.notSlouching) {
-		soundMute()
 		timelineStart(notSlouchingTimelineSteps)
 	} else {
 		console.assert(false, `unknown smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
@@ -116,6 +114,28 @@ function timelineStop() {
 }
 
 ////////////////////////////////////////////////////////////////////////
+//		Handle #soundVolumeLabelID
+////////////////////////////////////////////////////////////////////////
+// get initial #soundVolumeRangeID value from localStorage if available
+if (localStorage.getItem('slouchingOrNot-predict-soundVolume') !== null) {
+	let value = parseFloat(localStorage.getItem('slouchingOrNot-predict-soundVolume'))
+	document.querySelector('#soundVolumeRangeID').value = value
+	document.querySelector('#soundVolumeLabelID').innerHTML = value
+}
+
+// update #soundVolumeLabelID when #soundVolumeRangeID change, and update localStorage
+document.querySelector('#soundVolumeRangeID').addEventListener("input", function () {
+	var value = parseFloat(document.querySelector('#soundVolumeRangeID').value)
+	// update UI
+	document.querySelector('#soundVolumeLabelID').innerHTML = value
+	// store new value in localStorage
+	localStorage.setItem('slouchingOrNot-predict-soundVolume', value);
+	// update current soundVolume
+	soundVolume(value)
+}, false);
+
+
+////////////////////////////////////////////////////////////////////////
 //	handle notificationAudioEl
 ////////////////////////////////////////////////////////////////////////
 
@@ -131,7 +151,7 @@ var notificationAudioEl = null
  * @param {string} soundURL the url pointing to the sound
  * @param {Number} volume the volume of the sound between [0, 1]
  */
-function soundPlay(soundURL, volume) {
+function soundPlay(soundURL) {
 	// honor the muteID UI
 	let shouldBeMuted = document.querySelector('#muteID').checked ? true : false
 	if (shouldBeMuted === true) return
@@ -142,9 +162,12 @@ function soundPlay(soundURL, volume) {
 		notificationAudioEl = null
 	}
 
+	// get masterVolume from UI
+	var masterVolume = parseFloat(document.querySelector('#soundVolumeRangeID').value)
+
 	// create the new audio element 
 	var audioEl = new Audio(soundURL);
-	audioEl.volume = volume
+	audioEl.volume = masterVolume
 	audioEl.play();
 
 	// once the sound is ended, set notificationAudioEl to null
@@ -164,6 +187,13 @@ function soundMute(shouldBeMuted) {
 	if (notificationAudioEl === null) return
 	// set the muted attribute
 	notificationAudioEl.muted = shouldBeMuted
+}
+
+function soundVolume(newVolume) {
+	// if no sound is in progress, return now
+	if (notificationAudioEl === null) return
+	// set the muted attribute
+	notificationAudioEl.volume = newVolume
 }
 
 ////////////////////////////////////////////////////////////////////////
