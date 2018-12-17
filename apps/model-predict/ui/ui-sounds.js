@@ -57,6 +57,12 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
 		timelineStart(isSlouchingTimelineSteps)
 	} else if (slouchingOrNotEvent.smoothedBestClass === ModelConstants.CLASS_INDEXES.notSlouching) {
+		// do not start the timeline if the change is due to a isGoodEnough === false
+		// if( slouchingOrNotEvent.isGoodEnough === false ){
+		// 	soundStop()
+		// 	timelineStop()
+		// 	return
+		// }
 		timelineStart(notSlouchingTimelineSteps)
 	} else {
 		console.assert(false, `unknown smoothBestClass ${slouchingOrNotEvent.smoothedBestClass}`)
@@ -119,6 +125,7 @@ function timelineStop() {
 	timelineTimerID = null
 	timelineSteps = null
 	timelineStepIndex = 0
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -180,12 +187,19 @@ function soundPlay(soundURL) {
 
 	// once the sound is ended, set notificationAudioEl to null
 	audioEl.addEventListener('ended', function () {
-		notificationAudioEl.pause()
-		notificationAudioEl = null
+		soundStop()
 	})
 
 	// update notificationAudioEl
 	notificationAudioEl = audioEl
+}
+
+function soundStop() {
+	// // if no sound is in progress, return now
+	// if (notificationAudioEl === null) return
+	// // stop the sound
+	// notificationAudioEl.pause()
+	// notificationAudioEl = null
 }
 
 function soundMute(shouldBeMuted) {

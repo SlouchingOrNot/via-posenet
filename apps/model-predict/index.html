@@ -59,15 +59,14 @@
 				<input type="checkbox" id="posenetResultEnableID" checked></input>
 			</label>
 		</div>
-		<br />
 		<div id='predictUIPluginsContainerID'>
 			<div>
-				<label>Sound Mute
+				<strong>Sound</strong>
+				<label>Mute
 					<input type="checkbox" id="muteID" title='To mute the sound or not.' checked />
 				</label>
-			</div>
-			<div>
-				<label>Sound Volume
+				-
+				<label>Volume
 					<input type="range" id="soundVolumeRangeID" min="0" max="1" value='0.5' step='0.01' title='Master Sound Volume' />
 					<label id='soundVolumeLabelID'>0.5</label>
 				</label>
@@ -85,7 +84,6 @@
 					<input type="range" id="posenetOffsetYRangeID" min="-56" max="56" value='0' title='PosenetResult offset Y' />
 					<label id='posenetOffsetYLabelID'>-15</label>
 				</div>
-				<br />
 				<h3>Dataset Heatmap</h3>
 				<!-- UI to select the dataset-info url -->
 				<label><b>Dataset:</b>
@@ -96,7 +94,6 @@
 				<label><b>Augmentation Policy:</b>
 					<span id='augmentationPolicyID'></label>
 				</label>
-				<br />
 				<br />
 				<br />
 				<div id='featureVectorHeatmapsID'>
