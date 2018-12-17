@@ -1,12 +1,25 @@
+- move all predict into its own folder
+  - model-predict/index.html
+  - model-predict/ui/ui-helper.js
+  - model-predict/ui/ui-sound.js
+  - model-predict/ui/ui-status.js
+  - model-predict/ui/ui-camera-calibration.js
+- model-predict.html
+  - do a window.appParameters = {
+    cameraCalibrationOffsetY: -15
+  }
+  - and UI change this value
+  - thus it would be easier to handle the low-water high-water stuff too
 - TODO how to put the html of the predict-ui-plugins/
   - just do 2 containers in the predict-html pages
   - #predictUIPluginsContainerID
   - #predictUIPluginsOptionsContainerID
+  - create dom elements in javascript with the usual createDomFromString()
 - in model-predict.html - move the feature map out of model-predict.html
   - predict-camera-calibration.js
 - in model-predict.html - do a high-water low-water mechanism for offset-y
   - else it is super possible that the class will be shaky in skin-predict
-- remove any UI from model-predict.html, move it in plugins-ui-plugins/
+- DONE remove any UI from model-predict.html, move it in plugins-ui-plugins/
 - dataset: check current dataset to see if the picture are ok to publish
 - do jsdoc whenever possible
 - fill all the 'CODE SEPARATOR' everywhere

@@ -49,13 +49,7 @@
 		<label>Options
 			<input type="checkbox" id="optionsToggleID"></input>
 		</label>
-		
 	</div>
-        <div>
-		<label>Mute
-			<input type="checkbox" id="muteID" title='To mute the sound or not.' checked/>
-		</label>
-	</div>	
 	<div id='optionsID' style='display:none'>
 		<hr/>
 		<div>
@@ -63,8 +57,11 @@
 				<input type="checkbox" id="posenetResultEnableID" checked></input>
 			</label>
 		</div>
-
 		<br />
+		<div id='predictUIPluginsContainerID'>
+			<!-- predict-ui dom elements go here -->
+		</div>
+
 
 		<!-- element to contained the featureVectorHeatmapsID -->
 		<h3>Camera Calibration</h3>
@@ -197,7 +194,6 @@
 		//////////////////////////////////////////////////////////////////////////////
 
 		// get current augmentationPolicy
-		// let augmentationPolicy = urlParams.get('augmentationPolicy') || 'massiveAugmentation2'
 		var augmentationPolicy = 'massiveAugmentation2'
 		if( localStorage.getItem('slouchingOrNot-predict-augmentationPolicy') !== null ){
 			augmentationPolicy = localStorage.getItem('slouchingOrNot-predict-augmentationPolicy')
