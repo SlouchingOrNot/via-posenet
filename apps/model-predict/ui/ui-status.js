@@ -9,7 +9,6 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	// get data from slouchingOrNotEvent
 	let isGoodEnough = slouchingOrNotEvent.isGoodEnough
 	let isSeeingSomeone = slouchingOrNotEvent.isSeeingSomeone
-	// let rawBestClass = slouchingOrNotEvent.rawBestClass
 	let rawConfidence = slouchingOrNotEvent.rawConfidence
 	let smoothedBestClass = slouchingOrNotEvent.smoothedBestClass
 
@@ -28,11 +27,13 @@ window.addEventListener('slouchingOrNotEvent', (domEvent) => {
 	}
 
 	// display result
-	document.querySelector('#bestClassNameID').innerHTML = ModelConstants.CLASS_NAMES[smoothedBestClass]
 	if (smoothedBestClass === ModelConstants.CLASS_INDEXES.isSlouching) {
 		document.querySelector('#bestClassNameID').style.color = 'red'
+		document.querySelector('#bestClassNameID').innerHTML = 'Is Slouching'
 	} else {
 		document.querySelector('#bestClassNameID').style.color = ''
+		document.querySelector('#bestClassNameID').innerHTML = ModelConstants.CLASS_NAMES[smoothedBestClass]
+		document.querySelector('#bestClassNameID').innerHTML = 'Not Slouching'
 	}
 
 	// display predictionConfidenceID

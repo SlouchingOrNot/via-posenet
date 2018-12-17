@@ -1,3 +1,12 @@
+- do a sound volume in model-predict
+- model-predict.html
+  - do a window.appParameters = {
+    cameraCalibrationOffsetY: -15
+  }
+  - and UI change this value
+  - thus it would be easier to handle the low-water high-water stuff too
+- in model-predict.html - do a high-water low-water mechanism for offset-y
+  - else it is super possible that the class will be shaky in skin-predict
 - DONE do a better notification system
   - so a timeline for examples
   - when entering in isSlouching
@@ -15,15 +24,7 @@
   - just push the javascript
   - the js is the important part
 - DONE put back the dom in the html, remove it from -sound.js
-- remove the fancy heatmap ?
-- model-predict.html
-  - do a window.appParameters = {
-    cameraCalibrationOffsetY: -15
-  }
-  - and UI change this value
-  - thus it would be easier to handle the low-water high-water stuff too
-- in model-predict.html - do a high-water low-water mechanism for offset-y
-  - else it is super possible that the class will be shaky in skin-predict
+- DONE remove the fancy heatmap ?
 - TONOGODO how to put the html of the predict-ui-plugins/
   - just do 2 containers in the predict-html pages
   - #predictUIPluginsContainerID
