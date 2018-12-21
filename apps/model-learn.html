@@ -1,10 +1,13 @@
 <body>
+	<!-- add github ribbon - https://blog.github.com/2008-12-19-github-ribbons/ -->
+	<a href="https://github.com/slouching-or-not/slouching-or-not-posenet"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
 	<!-- links in page header -->
 	<a href='' onclick='location.href = `dataset-build.html${location.hash}`; event.preventDefault();'>build</a> -
 	<a href='' onclick='location.href = `dataset-view.html${location.hash}`; event.preventDefault();'>view</a> -
 	<a href='' onclick='location.href = `model-learn.html${location.hash}`; event.preventDefault();'>learn</a> -
 	<a href='model-predict/'>predict</a>
-	<br/><br/><br/>
+	<br /><br /><br />
 
 	<!-- UI to select the augmentation policy -->
 	<label>Augmentation Policy:
@@ -12,7 +15,7 @@
 			<!-- options for augmentationPolicy -->
 		</select>
 	</label>
-	<br/><br/>
+	<br /><br />
 
 	<!-- UI to select the dataset-info url -->
 	<label>Dataset:
@@ -21,11 +24,11 @@
 			<option value='low-isSlouching__middle-notSlouching'>low-isSlouching__middle-notSlouching</option>
 		</select>
 	</label>
-	<br/><br/><br/>
+	<br /><br /><br />
 
 	<!-- Start learning button -->
 	<button id='startLearningID'>Start Learning</button>
-	<br/><br/><br/>
+	<br /><br /><br />
 
 	<!-- display application status -->
 	<label>Status: <span id='appStatusID'>loading</span></label>
@@ -35,7 +38,7 @@
 	<div id='featureVectorHeatmapsID'></div>
 
 
-	<br/>
+	<br />
 	<!-- display datasetRaw summaries -->
 	<div id='datasetRawSumaries'></div>
 
@@ -53,203 +56,203 @@
 
 
 <script type='module'>
-// import mlPosenet from '../../contribs/ml-posenet/src/index.js'
+	// import mlPosenet from '../../contribs/ml-posenet/src/index.js'
 
-import DatasetInfo from '../src/dataset-info.js'
-import DatasetRaw from '../src/dataset-raw.js';
-import DatasetProcessing from '../src/dataset-processing.js';
-import DatasetAugmentation from '../src/dataset-augmentation.js';
-import DatasetFeature from '../src/dataset-feature.js'
-import DatasetTensor from '../src/dataset-tensor.js';
+	import DatasetInfo from '../src/dataset-info.js'
+	import DatasetRaw from '../src/dataset-raw.js';
+	import DatasetProcessing from '../src/dataset-processing.js';
+	import DatasetAugmentation from '../src/dataset-augmentation.js';
+	import DatasetFeature from '../src/dataset-feature.js'
+	import DatasetTensor from '../src/dataset-tensor.js';
 
-import ModelLearn from '../src/model-learn.js';
-import ModelBuild from '../src/model-build.js';
-import ModelIO from '../src/model-io.js';
-import ModelConstants from '../src/model-constants.js'
+	import ModelLearn from '../src/model-learn.js';
+	import ModelBuild from '../src/model-build.js';
+	import ModelIO from '../src/model-io.js';
+	import ModelConstants from '../src/model-constants.js'
 
-(async function(){
-	const cst = ModelConstants
-	var urlParams = new URLSearchParams(window.location.hash.substr(1))
+	(async function () {
+		const cst = ModelConstants
+		var urlParams = new URLSearchParams(window.location.hash.substr(1))
 
 
-	//////////////////////////////////////////////////////////////////////////////
-	//		load dataset-info
-	//////////////////////////////////////////////////////////////////////////////
-	var datasetName = urlParams.get('datasetName') || 'low-isSlouching__middle-notSlouching'
-	var datasetInfoURL = `../datasets/${datasetName}/dataset-info.json`
-	var datasetInfo = await DatasetInfo.load(datasetInfoURL)
+		//////////////////////////////////////////////////////////////////////////////
+		//		load dataset-info
+		//////////////////////////////////////////////////////////////////////////////
+		var datasetName = urlParams.get('datasetName') || 'low-isSlouching__middle-notSlouching'
+		var datasetInfoURL = `../datasets/${datasetName}/dataset-info.json`
+		var datasetInfo = await DatasetInfo.load(datasetInfoURL)
 
-	// set #datasetNameID value
-	document.querySelector('#datasetNameID').value = datasetName
+		// set #datasetNameID value
+		document.querySelector('#datasetNameID').value = datasetName
 
-	// handle #datasetNameID change
-	document.querySelector('#datasetNameID').addEventListener('change', function(){
-		// store new value in localStorage
-		localStorage.setItem('slouchingOrNot-predict-datasetName', value);
+		// handle #datasetNameID change
+		document.querySelector('#datasetNameID').addEventListener('change', function () {
+			// store new value in localStorage
+			localStorage.setItem('slouchingOrNot-predict-datasetName', value);
 
-		urlParams.set('datasetName', this.value);
-		location.hash = `#${urlParams.toString()}`
-		location.reload()
-	})
+			urlParams.set('datasetName', this.value);
+			location.hash = `#${urlParams.toString()}`
+			location.reload()
+		})
 
-	//////////////////////////////////////////////////////////////////////////////
-	//		load DatasetRaw
-	//////////////////////////////////////////////////////////////////////////////
-	console.time('loadingData')
-	let datasetRaw = new DatasetRaw(cst.NUM_CLASSES)
-	for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
-		await datasetRaw.loadClass(classIndex, datasetInfo.posenetResultURLs[classIndex], datasetInfo.imageURLs[classIndex])
-	}
-	console.timeEnd('loadingData')
-	datasetRaw.print('raw data')
-
-	// display datasetRaw before augmentation
-	document.querySelector('#datasetRawSumaries').appendChild( datasetRaw.createHTMLSummary(`Before Augmentation`))
-
-	// update appStatusID
-	document.querySelector('#appStatusID').innerHTML = 'Ready to Learn'
-
-	//////////////////////////////////////////////////////////////////////////////
-	//		remove not isGoodEnough samples from datasetRaw
-	//////////////////////////////////////////////////////////////////////////////
-
-	datasetRaw = DatasetProcessing.removeNotGoodEnoughSamples(datasetRaw)
-
-	//////////////////////////////////////////////////////////////////////////////
-	//		balance datasetRaw
-	//////////////////////////////////////////////////////////////////////////////
-
-	DatasetProcessing.balanceDatasetRaw(datasetRaw)
-
-	//////////////////////////////////////////////////////////////////////////////
-	//		Augment datasetRaw
-	//////////////////////////////////////////////////////////////////////////////
-
-	// get current augmentationPolicy
-	let augmentationPolicy = urlParams.get('augmentationPolicy') || 'massiveAugmentation2'
-
-	// augment datasetRaw
-	datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
-	datasetRaw.print('after augmentation data')
-
-	// build option for augmentationPolicyID
-	var augmentationPolicies = Object.keys(DatasetAugmentation.registeredAugmentations)
-	augmentationPolicies.forEach((augmentationPolicy) => {
-		var domElement = document.createElement('option')
-		domElement.value = augmentationPolicy
-		domElement.innerHTML = augmentationPolicy
-		document.querySelector('#augmentationPolicyID').appendChild(domElement)
-	})
-
-	// set #augmentationPolicyID value
-	document.querySelector('#augmentationPolicyID').value = augmentationPolicy
-
-	// handle #augmentationPolicyID change
-	document.querySelector('#augmentationPolicyID').addEventListener('change', function(){
-		// store new value in localStorage
-		localStorage.setItem('slouchingOrNot-predict-augmentationPolicy', value);
-
-		urlParams.set('augmentationPolicy', this.value);
-		location.hash = `#${urlParams.toString()}`
-		location.reload()
-	})
-
-	// display datasetRaw before augmentation
-	document.querySelector('#datasetRawSumaries').appendChild( datasetRaw.createHTMLSummary(`After Augmentation ${augmentationPolicy}`))
-
-	//////////////////////////////////////////////////////////////////////////////
-	//		remove any tilt in datasetRaw posenetResult keypoints
-	//////////////////////////////////////////////////////////////////////////////
-
-	datasetRaw = DatasetProcessing.removeTiltDatasetRaw(datasetRaw)
-
-	//////////////////////////////////////////////////////////////////////////////
-	//		display featureVector heatmap
-	//////////////////////////////////////////////////////////////////////////////
-
-	for(let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++){
-		// build canvasEl
-		let canvasEl = document.createElement('canvas')
-		canvasEl.width = canvasEl.height = 256
-		canvasEl.style.border = 'gray solid 1px'
-		document.querySelector('#featureVectorHeatmapsID').appendChild(canvasEl)
-		// build featureVectors
-		let featureVectors = []
-		for(let sampleIndex = 0; sampleIndex < datasetRaw.posenetResults[classIndex].length; sampleIndex++){
-			let posenetResult = datasetRaw.posenetResults[classIndex][sampleIndex]
-			if( DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult) === false ) continue
-
-			var featureVector = DatasetFeature.createFeatureVector(posenetResult)
-			featureVectors.push(featureVector)
+		//////////////////////////////////////////////////////////////////////////////
+		//		load DatasetRaw
+		//////////////////////////////////////////////////////////////////////////////
+		console.time('loadingData')
+		let datasetRaw = new DatasetRaw(cst.NUM_CLASSES)
+		for (let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++) {
+			await datasetRaw.loadClass(classIndex, datasetInfo.posenetResultURLs[classIndex], datasetInfo.imageURLs[classIndex])
 		}
-		// draw heat map
-		DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
-	}
+		console.timeEnd('loadingData')
+		datasetRaw.print('raw data')
 
-	//////////////////////////////////////////////////////////////////////////////
-	//		build DatasetTensor
-	//////////////////////////////////////////////////////////////////////////////
-
-	console.time('buildDatasetTensor')
-	let featureVectors = DatasetFeature.fromDatasetRaw(datasetRaw)
-	let datasetTensor = DatasetTensor.fromFeatureVectors(featureVectors)
-	console.timeEnd('buildDatasetTensor')
-
-	//////////////////////////////////////////////////////////////////////////////
-	//		train the model
-	//////////////////////////////////////////////////////////////////////////////
-	var inputShape = [datasetTensor.xs.shape[1], datasetTensor.xs.shape[2]]
-	var tfModel = ModelBuild.create(inputShape)
-	tfModel.summary();
-
-	// basic usage of tfvis
-	const surface = { name: 'Model Summary', tab: 'Model' };
-        tfvis.show.modelSummary(surface, tfModel);
-
-	document.querySelector('#startLearningID').addEventListener('click', async function(){
-		// update appStatusID
-		document.querySelector('#appStatusID').innerHTML = 'Learning'
-
-		console.log('training...')
-		console.time('trained')
-		await ModelLearn.train(tfModel, datasetTensor)
-		console.timeEnd('trained')
-
-		//////////////////////////////////////////////////////////////////////////////
-		//		save the mode
-		//////////////////////////////////////////////////////////////////////////////
-		var modelURL = 'indexeddb://slouchingOrNot-model-tensorflowjs'
-		let modelIO = new ModelIO(modelURL)
-		await modelIO.save(tfModel)
-		console.log('model saved')
+		// display datasetRaw before augmentation
+		document.querySelector('#datasetRawSumaries').appendChild(datasetRaw.createHTMLSummary(`Before Augmentation`))
 
 		// update appStatusID
-		document.querySelector('#appStatusID').innerHTML = 'Learning Done. Model Saved.'
+		document.querySelector('#appStatusID').innerHTML = 'Ready to Learn'
 
-		////////////////////////////////////////////////////////////////////////
-		//	compute and display the confusion matrix
-		////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////
+		//		remove not isGoodEnough samples from datasetRaw
+		//////////////////////////////////////////////////////////////////////////////
 
-		;(async function(tfModel, datasetTensor){
-			// see tfvis docs - https://storage.googleapis.com/tfjs-vis/mnist/dist/index.html
-			// details on confusion matrix - https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/
+		datasetRaw = DatasetProcessing.removeNotGoodEnoughSamples(datasetRaw)
 
-			// get the labels datasetTensor
-			const labels = datasetTensor.ys.argMax([-1]);
-			// compute the prediction for each datasetTensor.xs
-			const predictions = tfModel.predict(datasetTensor.xs).argMax([-1]);
+		//////////////////////////////////////////////////////////////////////////////
+		//		balance datasetRaw
+		//////////////////////////////////////////////////////////////////////////////
 
-			// display confusion matrix
-			const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, predictions);
-			const confusionContainer = { name: 'Confusion Matrix', tab: 'Evaluation' };
-			tfvis.show.confusionMatrix(confusionContainer, confusionMatrix, ModelConstants.CLASS_NAMES);
+		DatasetProcessing.balanceDatasetRaw(datasetRaw)
 
-			// display perClassAccuracy
-			const classAccuracy = await tfvis.metrics.perClassAccuracy(labels, predictions);
-        		const accuracyContainer = { name: 'Accuracy', tab: 'Evaluation' };
-       			tfvis.show.perClassAccuracy(accuracyContainer, classAccuracy, ModelConstants.CLASS_NAMES);
-		})(tfModel, datasetTensor)
-	})
+		//////////////////////////////////////////////////////////////////////////////
+		//		Augment datasetRaw
+		//////////////////////////////////////////////////////////////////////////////
+
+		// get current augmentationPolicy
+		let augmentationPolicy = urlParams.get('augmentationPolicy') || 'massiveAugmentation2'
+
+		// augment datasetRaw
+		datasetRaw = DatasetAugmentation.augmentDatasetRaw(datasetRaw, augmentationPolicy)
+		datasetRaw.print('after augmentation data')
+
+		// build option for augmentationPolicyID
+		var augmentationPolicies = Object.keys(DatasetAugmentation.registeredAugmentations)
+		augmentationPolicies.forEach((augmentationPolicy) => {
+			var domElement = document.createElement('option')
+			domElement.value = augmentationPolicy
+			domElement.innerHTML = augmentationPolicy
+			document.querySelector('#augmentationPolicyID').appendChild(domElement)
+		})
+
+		// set #augmentationPolicyID value
+		document.querySelector('#augmentationPolicyID').value = augmentationPolicy
+
+		// handle #augmentationPolicyID change
+		document.querySelector('#augmentationPolicyID').addEventListener('change', function () {
+			// store new value in localStorage
+			localStorage.setItem('slouchingOrNot-predict-augmentationPolicy', value);
+
+			urlParams.set('augmentationPolicy', this.value);
+			location.hash = `#${urlParams.toString()}`
+			location.reload()
+		})
+
+		// display datasetRaw before augmentation
+		document.querySelector('#datasetRawSumaries').appendChild(datasetRaw.createHTMLSummary(`After Augmentation ${augmentationPolicy}`))
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		remove any tilt in datasetRaw posenetResult keypoints
+		//////////////////////////////////////////////////////////////////////////////
+
+		datasetRaw = DatasetProcessing.removeTiltDatasetRaw(datasetRaw)
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		display featureVector heatmap
+		//////////////////////////////////////////////////////////////////////////////
+
+		for (let classIndex = 0; classIndex < cst.NUM_CLASSES; classIndex++) {
+			// build canvasEl
+			let canvasEl = document.createElement('canvas')
+			canvasEl.width = canvasEl.height = 256
+			canvasEl.style.border = 'gray solid 1px'
+			document.querySelector('#featureVectorHeatmapsID').appendChild(canvasEl)
+			// build featureVectors
+			let featureVectors = []
+			for (let sampleIndex = 0; sampleIndex < datasetRaw.posenetResults[classIndex].length; sampleIndex++) {
+				let posenetResult = datasetRaw.posenetResults[classIndex][sampleIndex]
+				if (DatasetProcessing.posenetResultGoodEnoughToLearn(posenetResult) === false) continue
+
+				var featureVector = DatasetFeature.createFeatureVector(posenetResult)
+				featureVectors.push(featureVector)
+			}
+			// draw heat map
+			DatasetFeature.drawHeatMapCanvas(canvasEl, featureVectors)
+		}
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		build DatasetTensor
+		//////////////////////////////////////////////////////////////////////////////
+
+		console.time('buildDatasetTensor')
+		let featureVectors = DatasetFeature.fromDatasetRaw(datasetRaw)
+		let datasetTensor = DatasetTensor.fromFeatureVectors(featureVectors)
+		console.timeEnd('buildDatasetTensor')
+
+		//////////////////////////////////////////////////////////////////////////////
+		//		train the model
+		//////////////////////////////////////////////////////////////////////////////
+		var inputShape = [datasetTensor.xs.shape[1], datasetTensor.xs.shape[2]]
+		var tfModel = ModelBuild.create(inputShape)
+		tfModel.summary();
+
+		// basic usage of tfvis
+		const surface = { name: 'Model Summary', tab: 'Model' };
+		tfvis.show.modelSummary(surface, tfModel);
+
+		document.querySelector('#startLearningID').addEventListener('click', async function () {
+			// update appStatusID
+			document.querySelector('#appStatusID').innerHTML = 'Learning'
+
+			console.log('training...')
+			console.time('trained')
+			await ModelLearn.train(tfModel, datasetTensor)
+			console.timeEnd('trained')
+
+			//////////////////////////////////////////////////////////////////////////////
+			//		save the mode
+			//////////////////////////////////////////////////////////////////////////////
+			var modelURL = 'indexeddb://slouchingOrNot-model-tensorflowjs'
+			let modelIO = new ModelIO(modelURL)
+			await modelIO.save(tfModel)
+			console.log('model saved')
+
+			// update appStatusID
+			document.querySelector('#appStatusID').innerHTML = 'Learning Done. Model Saved.'
+
+				////////////////////////////////////////////////////////////////////////
+				//	compute and display the confusion matrix
+				////////////////////////////////////////////////////////////////////////
+
+				; (async function (tfModel, datasetTensor) {
+					// see tfvis docs - https://storage.googleapis.com/tfjs-vis/mnist/dist/index.html
+					// details on confusion matrix - https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/
+
+					// get the labels datasetTensor
+					const labels = datasetTensor.ys.argMax([-1]);
+					// compute the prediction for each datasetTensor.xs
+					const predictions = tfModel.predict(datasetTensor.xs).argMax([-1]);
+
+					// display confusion matrix
+					const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, predictions);
+					const confusionContainer = { name: 'Confusion Matrix', tab: 'Evaluation' };
+					tfvis.show.confusionMatrix(confusionContainer, confusionMatrix, ModelConstants.CLASS_NAMES);
+
+					// display perClassAccuracy
+					const classAccuracy = await tfvis.metrics.perClassAccuracy(labels, predictions);
+					const accuracyContainer = { name: 'Accuracy', tab: 'Evaluation' };
+					tfvis.show.perClassAccuracy(accuracyContainer, classAccuracy, ModelConstants.CLASS_NAMES);
+				})(tfModel, datasetTensor)
+		})
 
 
 
@@ -257,5 +260,5 @@ import ModelConstants from '../src/model-constants.js'
 
 
 
-})()
+	})()
 </script>
